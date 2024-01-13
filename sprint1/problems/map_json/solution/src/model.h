@@ -270,10 +270,8 @@ class Game : public json_loader::JsonObject {
         using namespace std::literals;
         std::string s = "[";
         for (const auto& map : maps_) {
-            s += "{"s +
-                 std::format("\"id\": \"{}\", \"name\": \"{}\"", *map.GetId(),
-                             map.GetName()) +
-                 "},"s;
+            s += "{"s + "\"id\": \""s + *map.GetId() + "\", \"name\": \""s +
+                 map.GetName() + "\""s + "},"s;
         }
         if (!maps_.empty()) s.pop_back();  // last ,
         s += "]";
