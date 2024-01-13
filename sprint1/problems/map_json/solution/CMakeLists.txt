@@ -27,5 +27,7 @@ add_executable(game_server
 	src/json_loader.cpp
 	src/request_handler.cpp
 	src/request_handler.h
+	src/api.cpp
+	src/api.h
 )
 target_link_libraries(game_server PRIVATE Threads::Threads)
