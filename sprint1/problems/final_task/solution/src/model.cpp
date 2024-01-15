@@ -8,7 +8,7 @@ using namespace std::literals;
 namespace lit {
 const std::string id = "id"s, name = "name"s, roads = "roads"s, buildings = "buildings"s, offices = "offices"s, maps = "maps"s, x = "x"s, y = "y"s,
                   x0 = "x0"s, y0 = "y0"s, x1 = "x1"s, y1 = "y1"s, w = "w"s, h = "h"s, offsetX = "offsetX"s, offsetY = "offsetY"s;
-}  // namespace lit
+}  //  namespace lit
 void Map::LoadJsonNode(const ptree& tree) {
     *id_ = tree.get<std::string>("id");
     name_ = tree.get<std::string>(lit::name);
