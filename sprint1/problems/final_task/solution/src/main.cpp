@@ -40,7 +40,7 @@ int main(int argc, const char* argv[]) {
         constexpr net::ip::port_type port = 8080;
 
         // 1. Загружаем карту из файла и построить модель игры
-        model::Game game(args[1]);
+        model::Game game(argv[1]);
         // 2. Инициализируем io_context
         const unsigned num_threads = std::thread::hardware_concurrency();
         net::io_context ioc(num_threads);
