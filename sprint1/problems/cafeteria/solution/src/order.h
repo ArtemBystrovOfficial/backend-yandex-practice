@@ -38,7 +38,7 @@ class Order : public std::enable_shared_from_this<Order> {
         // соотвественно
         sausage_->StartFry(*cooker, [self = shared_from_this(), this]() {
             sausage_timer_.reset(new net::steady_timer(
-                strand_, HotDog::MIN_SAUSAGE_COOK_DURATION));
+                strand_, HotDog::MIN_SAUSAGE_COOK_DURATION + 20ms));
             // TODO продумать запуск таймера не по его созданию
             sausage_timer_->async_wait([self, this](sys::error_code ec) {
                 sausage_->StopFry();
@@ -55,7 +55,7 @@ class Order : public std::enable_shared_from_this<Order> {
             // TODO Все индигриенты сделать списком базового класса и
             // обрабатывать соотвественно
             bread_timer_.reset(new net::steady_timer(
-                strand_, HotDog::MIN_BREAD_COOK_DURATION));
+                strand_, HotDog::MIN_BREAD_COOK_DURATION + 20ms));
             // TODO продумать запуск таймера не по его созданию
             bread_timer_->async_wait([self, this](sys::error_code ec) {
                 bread_->StopFry();
