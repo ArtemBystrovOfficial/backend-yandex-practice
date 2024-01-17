@@ -1,4 +1,6 @@
 #pragma once
+#include <optional>
+
 #include "api.h"
 #include "common.h"
 #include "error_codes.h"
