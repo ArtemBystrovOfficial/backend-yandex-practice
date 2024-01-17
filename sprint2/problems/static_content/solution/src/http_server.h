@@ -1,7 +1,7 @@
 #pragma once
 #include "sdk.h"
 // boost.beast будет использовать std::string_view вместо boost::string_view
-#define BOOST_BEAST_USE_STD_STRING_VIEW
+// #define BOOST_BEAST_USE_STD_STRING_VIEW
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
@@ -9,13 +9,16 @@
 #include <boost/beast/http.hpp>
 #include <iostream>
 
+// #include "common.h"
+
 namespace http_server {
 
-namespace net = boost::asio;
-using tcp = net::ip::tcp;
+// using HttpResponse = http::response<http::string_body>;
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace sys = boost::system;
+namespace net = boost::asio;
+using tcp = net::ip::tcp;
 using namespace std::literals;
 
 void ReportError(beast::error_code ec, std::string_view what);
@@ -25,7 +28,7 @@ class SessionBase {
     using HttpRequest = http::request<http::string_body>;
 
    public:
-    SessionBase(const SessionBase&) = delete;
+    SessionBase(const SessionBase&&) = delete;
     SessionBase& operator=(const SessionBase&) = delete;
     void Run();
 
@@ -46,6 +49,7 @@ class SessionBase {
     void Write(http::response<Body, Fields>&& response) {
         // Запись выполняется асинхронно, поэтому response перемещаем в область
         // кучи
+
         auto safe_response = std::make_shared<http::response<Body, Fields>>(std::move(response));
 
         auto self = GetSharedThis();
@@ -73,7 +77,9 @@ class Session : public SessionBase, public std::enable_shared_from_this<Session<
    private:
     std::shared_ptr<SessionBase> GetSharedThis() override { return this->shared_from_this(); }
     void HandleRequest(HttpRequest&& request) override {
-        request_handler_(std::move(request), [self = this->shared_from_this()](auto&& response) { self->Write(std::move(response)); });
+        request_handler_(std::move(request), [self = this->shared_from_this()](auto&& response) {
+            std::visit([self](auto&& arg) { self->Write(std::move(arg)); }, std::move(response));
+        });
     }
     RequestHandler request_handler_;
 };
