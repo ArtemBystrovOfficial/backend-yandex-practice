@@ -1,15 +1,21 @@
 #pragma once
+#include <boost/beast/http.hpp>
 #include <optional>
 
 #include "api.h"
-#include "common.h"
 #include "error_codes.h"
+#include "headers.h"
 #include "http_server.h"
 #include "model.h"
 
 namespace http_handler {
 
-using namespace std::literals;
+namespace http = boost::beast::http;
+
+template <class Base, class T>
+std::unique_ptr<Base> static inline MakeUnique(auto& arg, auto& arg2, auto arg3) {
+    return std::unique_ptr<Base>(dynamic_cast<Base*>(new T(arg, arg2, arg3)));
+}
 
 class BasicRequestTypeHandler {
    public:
@@ -93,6 +99,8 @@ class RequestHandler {
 
    private:
     message_pack_t HandleRequest(StringRequest&& req);
+
+    void PreSettings(StringRequest& req);
 
     model::Game& game_;
     std::vector<std::unique_ptr<BasicRequestTypeHandler>> handlers_variants_;

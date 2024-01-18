@@ -5,9 +5,23 @@
 #include <filesystem>
 #include <regex>
 
+// TODO подумать над рефлекисей JSON моделей
+
 using ptree = boost::property_tree::ptree;
 
 namespace json_loader {
+
+template <typename T>
+void ProcessChildNodes(const ptree& tree, const std::string& child_name, std::vector<T>& container) {
+    for (const auto& [_, node] : tree.get_child(child_name)) {
+        container.push_back({node});
+    }
+}
+
+template <typename T>
+void ProcessChildNodes(ptree& parent, T& object) {
+    for (auto& road : object) parent.push_back({"", road.GetJsonNode()});
+}
 
 // DEBUG пока только для тестов, если не устроят записи по типу "y0" : "0", а
 // нужны будут "y0" : 0, буду думать

@@ -8,7 +8,6 @@ namespace api {
 
 using version_code_t = size_t;
 using Args_t = std::deque<std::string_view>;
-// SINGLETON
 
 class ApiCommon {
    public:
@@ -20,6 +19,8 @@ class ApiCommon {
     std::pair<std::string, TypeData> GetFormatData(Args_t &&, std::string_view) const;
     // GetFormatData
     virtual int GetVersionCode() = 0;
+
+    static std::string GetContentTypeString(api::ApiCommon::TypeData type);
 
    protected:
     std::map<std::string_view, api_handler_t> get_handlers_;

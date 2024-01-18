@@ -30,5 +30,7 @@ add_executable(game_server
 	src/api.cpp
 	src/api.h
 	src/common.h
+	src/common.cpp
+	src/headers.h
 )
 target_link_libraries(game_server PRIVATE Threads::Threads)

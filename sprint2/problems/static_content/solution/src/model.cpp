@@ -13,11 +13,9 @@ void Map::LoadJsonNode(const ptree& tree) {
     *id_ = tree.get<std::string>("id");
     name_ = tree.get<std::string>(lit::name);
 
-    for (const auto& [_, road] : tree.get_child(lit::roads)) roads_.push_back({road});
-
-    for (const auto& [_, building] : tree.get_child(lit::buildings)) buildings_.push_back({building});
-
-    for (const auto& [_, offices] : tree.get_child(lit::offices)) offices_.push_back({offices});
+    ProcessChildNodes(tree, lit::roads, roads_);
+    ProcessChildNodes(tree, lit::buildings, buildings_);
+    ProcessChildNodes(tree, lit::offices, offices_);
 }
 
 ptree Map::GetJsonNode() const {
@@ -27,13 +25,13 @@ ptree Map::GetJsonNode() const {
     tree.put(lit::name, name_);
 
     ptree roads;
-    for (auto& road : roads_) roads.push_back({"", road.GetJsonNode()});
+    ProcessChildNodes(roads, roads_);
 
     ptree buildings;
-    for (auto& building : buildings_) buildings.push_back({"", building.GetJsonNode()});
+    ProcessChildNodes(buildings, buildings_);
 
     ptree offices;
-    for (auto& office : offices_) offices.push_back({"", office.GetJsonNode()});
+    ProcessChildNodes(offices, offices_);
 
     tree.add_child(lit::roads, roads);
     tree.add_child(lit::buildings, buildings);
@@ -86,7 +84,8 @@ void Game::LoadJsonNode(const ptree& tree) {
 ptree Game::GetJsonNode() const {
     ptree tree, maps;
     // TODO Сделать макрос для автоматического заполнения массивов
-    for (const auto& map : maps_) maps.push_back({"", map.GetJsonNode()});
+    ProcessChildNodes(maps, maps_);
+
     tree.add_child(lit::maps, maps);
     return tree;
 }

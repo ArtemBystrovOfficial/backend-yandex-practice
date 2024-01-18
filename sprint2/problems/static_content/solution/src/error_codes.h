@@ -1,5 +1,9 @@
 #pragma once
 
+////////////////////////////
+//// Централизация ошибок
+////////////////////////////
+
 namespace http_handler {
 
 using error_code_t = char;

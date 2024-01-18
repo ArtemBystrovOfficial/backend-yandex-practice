@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "error_codes.h"
+#include "headers.h"
 
 using namespace std::literals;
 namespace json = boost::json;
@@ -26,6 +27,17 @@ std::pair<std::string, ApiCommon::TypeData> ApiCommon::GetFormatData(Args_t&& ar
     auto it = get_handlers_.find(category);
     if (it == get_handlers_.end()) throw ec::BAD_REQUEST;
     return it->second(std::move(args), body);
+}
+
+std::string ApiCommon::GetContentTypeString(api::ApiCommon::TypeData type) {
+    std::string content;
+    switch (type) {
+        case api::ApiCommon::TypeData::HTML:
+            content = ContentType::TEXT_HTML;
+        case api::ApiCommon::TypeData::JSON:
+            content = ContentType::JSON;
+    }
+    return content;
 }
 
 ApiV1::ApiV1(model::Game& game) : game_(game) { get_handlers_.insert({"maps"sv, std::bind(&ApiV1::MapHandler, this, ph::_1, ph::_2)}); }
