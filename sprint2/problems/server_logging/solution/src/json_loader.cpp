@@ -23,7 +23,7 @@ void JsonObject::LoadJson(std::string_view sv) {
 std::string JsonObject::GetJson(const ptree& tree, bool is_format) {
     std::ostringstream oss;
     boost::property_tree::write_json(oss, tree, is_format);
-    return oss.str();
+    return _removeAllQuotesFromNumbers(oss.str());
 }
 
 void JsonObject::LoadJsonFromFile(const std::filesystem::path& path) {

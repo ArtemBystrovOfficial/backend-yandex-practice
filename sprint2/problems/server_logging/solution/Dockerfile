@@ -20,9 +20,10 @@ RUN mkdir /app/build && cd /app/build && \
 COPY ./src /app/src
 COPY ./data /app/data
 COPY CMakeLists.txt /app/
- 
+COPY ./static /app/static 
+
 RUN cd /app/build && cmake -DCMAKE_BUILD_TYPE=Release .. && \
-    cmake --build . 
+    cmake --build . -j4 
 
 #####################
 
@@ -33,5 +34,6 @@ USER www
 
 COPY --from=build /app/build/bin/server_logging /app/
 COPY ./data /app/data
+COPY ./static /app/static
 
-ENTRYPOINT ["/app/server_logging", "/app/data/config.json"] 
+ENTRYPOINT ["/app/server_logging", "/app/data/config.json" , "/app/static"] 

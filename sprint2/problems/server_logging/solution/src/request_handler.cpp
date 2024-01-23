@@ -123,7 +123,7 @@ RequestHandler::RequestHandler(model::Game& game, api::ApiProxyKeeper& keeper, s
     handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, PostRequestTypeHandler>(game, keeper, static_folder));
 }
 message_pack_t RequestHandler::HandleRequest(StringRequest&& req) {
-    req.target(common_pack::EncodeURL(ToSV(req.target())));
+    PreSettings(req);
     auto handler = std::find_if(handlers_variants_.begin(), handlers_variants_.end(),
                                 [&req](const auto& handler) { return handler->GetMethodString() == ToSV(req.method_string()); });
     if (handler == handlers_variants_.end()) return bad_request_->Handle(req, ErrorCodes::BAD_REQUEST);
