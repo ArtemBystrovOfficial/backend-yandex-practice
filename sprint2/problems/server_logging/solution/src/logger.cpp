@@ -41,5 +41,5 @@ void LogFormatter(logging::record_view const& rec, logging::formatting_ostream& 
 void InitBoostLogFilter() {
     logging::add_common_attributes();
 
-    logging::add_console_log(std::clog, keywords::format = &LogFormatter, keywords::auto_flush = true);
+    logging::add_console_log(std::cout, keywords::format = &LogFormatter, keywords::auto_flush = true);
 }

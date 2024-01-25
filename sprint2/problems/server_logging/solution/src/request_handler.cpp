@@ -133,6 +133,7 @@ message_pack_t RequestHandler::HandleRequest(StringRequest&& req) {
         return resp;
     } catch (const ErrorCodes& ec) {
         auto resp = bad_request_->Handle(req, ec);
+        // TODO STACK TRACE IN ASYNC CODE
         return resp;
     } catch (const std::exception& ec) {
         auto resp = bad_request_->Handle(req, ErrorCodes::UNKNOWN_ERROR, ec.what());
