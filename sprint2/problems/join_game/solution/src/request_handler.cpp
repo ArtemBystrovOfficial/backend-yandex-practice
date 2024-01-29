@@ -9,13 +9,17 @@ namespace fs = std::filesystem;
 
 namespace http_handler {
 
-namespace {
-
-// TODO макрос по переводу string view не работает
-inline std::string_view ToSV(boost::beast::string_view bsv) { return std::string_view(bsv.data(), bsv.size()); }
-inline boost::beast::string_view ToBSV(std::string_view bsv) { return boost::beast::string_view(bsv.data(), bsv.size()); }
-
-}  // namespace
+std::shared_ptr<BasicRedirection> BasicRequestTypeHandler::ExtractRequestRedirection(Args_t& args) {
+    auto it = redirection_pack_.end();
+    if (!args.empty()) {
+        it = redirection_pack_.find(args.front());
+    }
+    if (it != redirection_pack_.end()) {
+        args.pop_front();
+        return it->second;
+    }
+    return default_redirection_;
+}
 
 message_pack_t BasicRequestTypeHandler::Handle(const StringRequest& req) {
     StringResponse response(http::status::ok, req.version());
@@ -27,35 +31,10 @@ message_pack_t BasicRequestTypeHandler::Handle(const StringRequest& req) {
 
 message_pack_t GetRequestTypeHandler::Handle(const StringRequest& req) {
     auto resp = BasicRequestTypeHandler::Handle(req);
-    redirectTarget(ToSV(req.target()), resp);
+    auto args = common_pack::SplitUrl(ToSV(req.target()));
+    auto redirection = ExtractRequestRedirection(args);
+    redirection->RedirectReadableAccess(std::move(args), resp);  // ONLY GET
     return resp;
-}
-
-void GetRequestTypeHandler::redirectTarget(std::string_view target, message_pack_t& resp) {
-    auto values = common_pack::SplitUrl(target);
-
-    auto type = values.front();
-
-    // API
-    if (type == ContentType::API_TYPE) {
-        values.pop_front();
-        auto& api_resp = std::get<StringResponse>(resp);
-        if (!values.empty()) {
-            auto version = values.front();
-            values.pop_front();
-            auto api_ptr = api_keeper_.GetApiByVersion(version);
-            auto [data, content_type] = api_ptr->GetFormatData(std::move(values), api_resp.body());
-            api_resp.set(http::field::content_type, api::ApiCommon::GetContentTypeString(content_type));
-            common_pack::FillBody(api_resp, data);
-        }
-        return;
-    }
-
-    // FILESYSTEM DEFAULT
-    common_pack::ReadFileToBuffer(resp, target, static_folder_);
-    return;
-
-    throw ErrorCodes::BAD_REQUEST;
 }
 
 message_pack_t HeadRequestTypeHandler::Handle(const StringRequest& req) {
@@ -64,6 +43,15 @@ message_pack_t HeadRequestTypeHandler::Handle(const StringRequest& req) {
     if (std::holds_alternative<StringResponse>(rep)) std::get<StringResponse>(rep).body().clear();
     return rep;
 }
+
+message_pack_t PostRequestTypeHandler::Handle(const StringRequest& req) {
+    auto resp = BasicRequestTypeHandler::Handle(req);
+    auto args = common_pack::SplitUrl(ToSV(req.target()));
+    auto redirection = ExtractRequestRedirection(args);
+    redirection->RedirectWritableAccess(std::move(args), resp);  // ONLY GET
+    return resp;
+}
+
 message_pack_t BadRequestTypeHandler::Handle(const StringRequest& req, ErrorCodes status, std::optional<std::string_view> custom_body) {
     auto resp_var = BasicRequestTypeHandler::Handle(req);
     auto& resp = std::get<StringResponse>(resp_var);
@@ -78,7 +66,7 @@ message_pack_t BadRequestTypeHandler::Handle(const StringRequest& req, ErrorCode
             resp.result(http::status::bad_request);
             code = "badRequest"sv;
             message = "badRequest"sv;  // TODO Все коды и сообщения ошибок
-                                       // вынести в error_codes.h
+                                       // вынести в error_codes.h а также вынести обработчик отдельно либо map
             break;
         case ErrorCodes::MAP_NOT_FOUNDED:
             resp.result(http::status::not_found);
@@ -114,14 +102,18 @@ message_pack_t BadRequestTypeHandler::Handle(const StringRequest& req, ErrorCode
     common_pack::FillBody(resp, json_loader::JsonObject::GetJson(tree));
     return resp_var;
 }
+
 RequestHandler::RequestHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder)
     : static_folder_(static_folder),
       game_{game},
-      bad_request_(MakeUnique<BadRequestTypeHandler, BadRequestTypeHandler>(game, keeper, static_folder)) {
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, HeadRequestTypeHandler>(game, keeper, static_folder));
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, GetRequestTypeHandler>(game, keeper, static_folder));
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, PostRequestTypeHandler>(game, keeper, static_folder));
+      bad_request_(MakeUnique<BadRequestTypeHandler, BadRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_)) {
+    handlers_redirection_[ContentType::API_TYPE] = std::make_shared<ApiRedirection>(keeper);
+
+    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, HeadRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_));
+    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, GetRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_));
+    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, PostRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_));
 }
+
 message_pack_t RequestHandler::HandleRequest(StringRequest&& req) {
     PreSettings(req);
     auto handler = std::find_if(handlers_variants_.begin(), handlers_variants_.end(),
@@ -145,7 +137,5 @@ void RequestHandler::PreSettings(StringRequest& req) {
     req.target(common_pack::EncodeURL(ToSV(req.target())));
     if (req.target() == "/") req.target(ToBSV(ContentType::INDEX_HTML));
 }
-
-message_pack_t PostRequestTypeHandler::Handle(const StringRequest& req) { return message_pack_t(); }
 
 }  // namespace http_handler
