@@ -18,8 +18,8 @@ class ApiV1 : public ApiCommon {
     ///////////////////////
     // MAPS
     ///////////////////////
-    void GetMapHandler(Args_t &&, StringResponse &) const;
-    void PostMapHandler(Args_t &&, StringResponse &);
+    void GetMapHandler(HttpResource &&) const;
+    void PostMapHandler(HttpResource &&);
 
     std::string GetMapListJson() const;
     std::string GetMapDescriptionJson(std::string_view) const;
@@ -28,12 +28,12 @@ class ApiV1 : public ApiCommon {
     // GAME
     ///////////////////////
 
-    void GetGameHandler(Args_t &&, StringResponse &) const {};
-    void PostGameHandler(Args_t &&, StringResponse &);
+    void GetGameHandler(HttpResource &&) const;
+    void PostGameHandler(HttpResource &&);
 
-    void AddNewPlayer(Args_t &&, StringResponse &);
+    void AddNewPlayer(HttpResource &&);
+    void GetPlayers(HttpResource &&) const;
 
-    std::map<std::string_view, api_handler_t> get_json_handlers_;
     app::App &app_;
 };
 

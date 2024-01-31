@@ -50,6 +50,7 @@ class Tagged {
 // namespace detail
 struct TokenTag {};
 using Token = Tagged<std::string, TokenTag>;
+constexpr size_t TOKEN_SIZE = 16;
 
 Token GenerateRandomToken();
 

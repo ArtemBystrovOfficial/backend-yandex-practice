@@ -116,7 +116,7 @@ bool Game::IsSessionStarted(Map::Id id) { return GetSession(id) != nullptr; }
 
 std::shared_ptr<GameSession> Game::GetSession(Map::Id id) {
     auto it = std::find_if(sessions_.begin(), sessions_.end(), [id](auto& session) { return session->GetMap()->GetId() == id; });
-    return it != sessions_.end() ? nullptr : *it;
+    return it != sessions_.end() ? *it : nullptr;
 }
 
 void Building::LoadJsonNode(const ptree& tree) {
@@ -178,9 +178,12 @@ ptree Office::GetJsonNode() const {
     return tree;
 }
 
-GameSession::GameSession(std::shared_ptr<Map> map) : map_(std::move(map)) {}
+GameSession::GameSession(std::shared_ptr<Map> map) : map_(std::move(map)), _last_dog_id(0) {}
 
-void GameSession::AddDog(std::shared_ptr<Dog> dog) { dogs_.push_back(std::move(dog)); }
+void GameSession::AddDog(std::shared_ptr<Dog> dog) {
+    dog->SetId(Dog::Id(_last_dog_id++));
+    dogs_.push_back(std::move(dog));
+}
 
 std::shared_ptr<Dog> GameSession::FindDogByID(Dog::Id id) {
     // TODO сделать HashMap как и для карт
@@ -190,8 +193,10 @@ std::shared_ptr<Dog> GameSession::FindDogByID(Dog::Id id) {
 
 std::shared_ptr<Map> GameSession::GetMap() { return map_; }
 
-Dog::Dog(Id id) : id_(id) {}
+void Dog::SetId(const Id& id) { id_ = id; }
 
 const Dog::Id& Dog::GetId() { return id_; }
+
+const std::string& Dog::GetName() { return name_; }
 
 }  // namespace model

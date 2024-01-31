@@ -144,13 +144,20 @@ class Map : public json_loader::JsonObject {
 
 class Dog {
    public:
-    using Id = util::Tagged<std::string, Dog>;
-    Dog(Id id);
+    using Id = util::Tagged<size_t, Dog>;
 
+    Dog(std::string_view name) : id_(-1), name_(name.data(), name.size()){};
+
+    bool IsValid() { return !name_.empty(); }
+
+    void SetId(const Id&);
     const Id& GetId();
+
+    const std::string& GetName();
 
    private:
     Id id_;
+    std::string name_;
 };
 
 class GameSession {
@@ -164,10 +171,13 @@ class GameSession {
 
     std::shared_ptr<Map> GetMap();
 
+    const Dogs& GetDogs() { return dogs_; }
+
     // Сделаем систему создания комнат или автоматическое распределение по картам, но сейчас одна сессия одна карта
     size_t GetCountDogs() { return dogs_.size(); }
 
    private:
+    int _last_dog_id;
     std::shared_ptr<Map> map_;
     Dogs dogs_;
 };

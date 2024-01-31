@@ -3,7 +3,7 @@
 #include "error_codes.h"
 
 namespace {
-using ec = http_handler::ErrorCodes;
+using ec = http_handler::ErrorCode;
 }  // namespace
 
 namespace api {

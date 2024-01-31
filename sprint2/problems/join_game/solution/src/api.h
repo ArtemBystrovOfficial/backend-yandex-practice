@@ -9,7 +9,7 @@ namespace api {
 
 using version_code_t = size_t;
 using Args_t = std::deque<std::string_view>;
-using api_handler_t = std::function<void(Args_t&&, StringResponse& resp)>;
+using api_handler_t = std::function<void(HttpResource&&)>;
 
 class ApiCommon {
    public:
@@ -17,8 +17,8 @@ class ApiCommon {
 
     ApiCommon() = default;
 
-    void GetFormatData(Args_t&&, StringResponse& resp) const;
-    void PostFormatData(Args_t&&, StringResponse& resp);
+    void GetFormatData(HttpResource&& resp) const;
+    void PostFormatData(HttpResource&& resp);
 
     virtual int GetVersionCode() = 0;
 

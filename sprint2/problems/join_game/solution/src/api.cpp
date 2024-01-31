@@ -8,46 +8,35 @@
 #include "headers.h"
 namespace {
 using namespace std::literals;
-using ec = http_handler::ErrorCodes;
+using ec = http_handler::ErrorCode;
 }  // namespace
 
 namespace api {
 
 namespace ph = std::placeholders;
 
-void ApiCommon::GetFormatData(Args_t&& args, StringResponse& resp) const {
-    if (args.empty())  // Version Category
+void ApiCommon::GetFormatData(HttpResource&& res) const {
+    if (res.args.empty())  // Version Category
         throw ec::BAD_REQUEST;
 
-    auto category = args.front();
-    args.pop_front();
+    auto category = res.args.front();
+    res.args.pop_front();
 
     auto it = get_handlers_.find(category);
-    if (it == get_handlers_.end()) throw ec::BAD_REQUEST;
-    return it->second(std::move(args), resp);
+    if (it == get_handlers_.end()) throw ec::GET_NOT_ALLOWED;
+    it->second(std::move(res));
 }
 
-void ApiCommon::PostFormatData(Args_t&& args, StringResponse& resp) {
-    if (args.empty())  // Version Category
+void ApiCommon::PostFormatData(HttpResource&& res) {
+    if (res.args.empty())  // Version Category
         throw ec::BAD_REQUEST;
 
-    auto category = args.front();
-    args.pop_front();
+    auto category = res.args.front();
+    res.args.pop_front();
 
     auto it = post_handlers_.find(category);
-    if (it == post_handlers_.end()) throw ec::BAD_REQUEST;
-    return it->second(std::move(args), resp);
-}
-
-std::string ApiCommon::GetContentTypeString(api::ApiCommon::TypeData type) {
-    std::string content;
-    switch (type) {
-        case api::ApiCommon::TypeData::HTML:
-            content = ContentType::TEXT_HTML;
-        case api::ApiCommon::TypeData::JSON:
-            content = ContentType::JSON;
-    }
-    return content;
+    if (it == post_handlers_.end()) throw ec::POST_NOT_ALLOWED;
+    it->second(std::move(res));
 }
 
 }  // namespace api

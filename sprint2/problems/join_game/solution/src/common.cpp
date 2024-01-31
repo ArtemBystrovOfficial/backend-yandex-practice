@@ -94,9 +94,9 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
     namespace sys = boost::system;
 
     std::filesystem::path path(std::string(static_folder.data(), static_folder.size()) + std::string(path_sv.data(), path_sv.size()));
-    if (!std::filesystem::exists(path)) throw ErrorCodes::FILE_NOT_EXIST;
+    if (!std::filesystem::exists(path)) throw ErrorCode::FILE_NOT_EXIST;
 
-    if (!IsSubPath(path, std::filesystem::path(static_folder))) throw ErrorCodes::BAD_ACCESS;
+    if (!IsSubPath(path, std::filesystem::path(static_folder))) throw ErrorCode::BAD_ACCESS;
 
     FileResponse res;
 
@@ -106,7 +106,7 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
 
     file_body::value_type file;
 
-    if (sys::error_code ec; file.open(path.c_str(), beast::file_mode::read, ec), ec) throw ErrorCodes::READ_FILE;
+    if (sys::error_code ec; file.open(path.c_str(), beast::file_mode::read, ec), ec) throw ErrorCode::READ_FILE;
 
     res.body() = std::move(file);
     res.prepare_payload();

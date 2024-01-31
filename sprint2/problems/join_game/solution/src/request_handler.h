@@ -87,7 +87,7 @@ class BadRequestTypeHandler : public BasicRequestTypeHandler {
         : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
     BadRequestTypeHandler() = delete;
 
-    message_pack_t Handle(const StringRequest& req, ErrorCodes status, std::optional<std::string_view> custom_body = std::nullopt);
+    message_pack_t Handle(const StringRequest& req, ErrorCode status, std::optional<std::string_view> custom_body = std::nullopt);
 
     std::string_view GetMethodString() const override { return method_string_; }
 };
