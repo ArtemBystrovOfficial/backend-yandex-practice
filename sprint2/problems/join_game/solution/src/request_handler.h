@@ -20,9 +20,8 @@ std::unique_ptr<Base> static inline MakeUnique(Args&&... args) {
 class BasicRequestTypeHandler {
    public:
     BasicRequestTypeHandler() = delete;
-    BasicRequestTypeHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : game_(game),
-          api_keeper_(keeper),
+    BasicRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
+        : api_keeper_(keeper),
           static_folder_(static_folder),
           redirection_pack_(red_pack),
           default_redirection_(std::make_shared<FilesystemRedirection>(static_folder)) {}
@@ -34,7 +33,6 @@ class BasicRequestTypeHandler {
 
    protected:
     api::ApiProxyKeeper& api_keeper_;
-    model::Game game_;
     std::string_view static_folder_;
 
    private:
@@ -46,8 +44,8 @@ class GetRequestTypeHandler : public BasicRequestTypeHandler {
     static constexpr auto method_string_ = "GET"sv;
 
    public:
-    GetRequestTypeHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : BasicRequestTypeHandler(game, keeper, static_folder, red_pack) {}
+    GetRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
+        : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
     GetRequestTypeHandler() = delete;
 
     message_pack_t Handle(const StringRequest& req) override;
@@ -59,8 +57,8 @@ class HeadRequestTypeHandler : public GetRequestTypeHandler {
     static constexpr auto method_string_ = "HEAD"sv;
 
    public:
-    HeadRequestTypeHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : GetRequestTypeHandler(game, keeper, static_folder, red_pack) {}
+    HeadRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
+        : GetRequestTypeHandler(keeper, static_folder, red_pack) {}
 
     message_pack_t Handle(const StringRequest& req) override;
 
@@ -71,8 +69,8 @@ class PostRequestTypeHandler : public BasicRequestTypeHandler {
     static constexpr auto method_string_ = "POST"sv;
 
    public:
-    PostRequestTypeHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : BasicRequestTypeHandler(game, keeper, static_folder, red_pack) {}
+    PostRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
+        : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
     PostRequestTypeHandler() = delete;
 
     message_pack_t Handle(const StringRequest& req) override;
@@ -85,8 +83,8 @@ class BadRequestTypeHandler : public BasicRequestTypeHandler {
     static constexpr auto body_content_ = "Invalid method"sv;
 
    public:
-    BadRequestTypeHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : BasicRequestTypeHandler(game, keeper, static_folder, red_pack) {}
+    BadRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
+        : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
     BadRequestTypeHandler() = delete;
 
     message_pack_t Handle(const StringRequest& req, ErrorCodes status, std::optional<std::string_view> custom_body = std::nullopt);
@@ -96,7 +94,7 @@ class BadRequestTypeHandler : public BasicRequestTypeHandler {
 
 class RequestHandler {
    public:
-    explicit RequestHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder = "");
+    explicit RequestHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder = "");
 
     RequestHandler(const RequestHandler&) = delete;
     RequestHandler& operator=(const RequestHandler&) = delete;
@@ -110,7 +108,6 @@ class RequestHandler {
     message_pack_t HandleRequest(StringRequest&& req);
     void PreSettings(StringRequest& req);
 
-    model::Game& game_;
     std::vector<std::unique_ptr<BasicRequestTypeHandler>> handlers_variants_;
     RedirectionPack handlers_redirection_;
     std::unique_ptr<BadRequestTypeHandler> bad_request_;

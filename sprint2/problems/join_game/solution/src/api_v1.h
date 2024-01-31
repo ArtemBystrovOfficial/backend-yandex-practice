@@ -1,13 +1,14 @@
 #pragma once
 
 #include "api.h"
+#include "app.h"
 #include "model.h"
 
 namespace api {
 
 class ApiV1 : public ApiCommon {
    public:
-    ApiV1(model::Game &game);
+    ApiV1(app::App &app);
 
     int GetVersionCode() override;
 
@@ -30,8 +31,10 @@ class ApiV1 : public ApiCommon {
     void GetGameHandler(Args_t &&, StringResponse &) const {};
     void PostGameHandler(Args_t &&, StringResponse &);
 
+    void AddNewPlayer(Args_t &&, StringResponse &);
+
     std::map<std::string_view, api_handler_t> get_json_handlers_;
-    model::Game &game_;
+    app::App &app_;
 };
 
 }  // namespace api

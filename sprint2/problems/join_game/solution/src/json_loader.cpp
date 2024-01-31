@@ -20,6 +20,13 @@ void JsonObject::LoadJson(std::string_view sv) {
     LoadJsonNode(tree);
 }
 
+ptree JsonObject::GetTree(std::string_view json) {
+    ptree tree;
+    std::istringstream iss(std::move(std::string(json)));
+    boost::property_tree::read_json(iss, tree);
+    return tree;
+}
+
 std::string JsonObject::GetJson(const ptree& tree, bool is_format) {
     std::ostringstream oss;
     boost::property_tree::write_json(oss, tree, is_format);

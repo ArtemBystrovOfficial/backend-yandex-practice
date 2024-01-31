@@ -4,7 +4,7 @@
 
 #include "model.h"
 
-namespace auth {
+namespace app {
 
 struct Player {
     std::shared_ptr<model::GameSession> session_;
@@ -13,11 +13,11 @@ struct Player {
 
 class Players {
    public:
-    using Players_t = std::map<util::Token, std::shared_ptr<model::Player>>;
+    using Players_t = std::map<util::Token, std::shared_ptr<Player>>;
     Players(model::Game& game);
 
-    std::pair<std::shared_ptr<Player>, util::Token> AddPlayer(std::shared_ptr<model::Dog> dog, std::shared_ptr<model::GameSession> game);
-    std::shared_ptr<Player> FindByDogAndMapId(Dog::Id dog_id, Map::Id map_id);
+    std::pair<std::shared_ptr<Player>, util::Token> AddPlayer(std::shared_ptr<model::Dog> dog, model::Map::Id map_id);
+    std::shared_ptr<Player> FindByDogAndMapId(model::Dog::Id dog_id, model::Map::Id map_id);
     std::shared_ptr<Player> FindByToken(util::Token);
 
    private:
@@ -25,4 +25,4 @@ class Players {
     model::Game& game_;
 };
 
-}  // namespace auth
+}  // namespace app

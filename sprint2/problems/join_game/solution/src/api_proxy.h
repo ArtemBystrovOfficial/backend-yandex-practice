@@ -9,7 +9,7 @@ namespace api {
 
 class ApiProxyKeeper {
    public:
-    ApiProxyKeeper(model::Game &game);
+    ApiProxyKeeper(app::App &);
 
     std::shared_ptr<const ApiCommon> GetConstApiByVersion(std::string_view) const;
     std::shared_ptr<ApiCommon> GetMutableApiByVersion(std::string_view) const;

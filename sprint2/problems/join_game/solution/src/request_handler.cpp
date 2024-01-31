@@ -103,15 +103,14 @@ message_pack_t BadRequestTypeHandler::Handle(const StringRequest& req, ErrorCode
     return resp_var;
 }
 
-RequestHandler::RequestHandler(model::Game& game, api::ApiProxyKeeper& keeper, std::string_view static_folder)
+RequestHandler::RequestHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder)
     : static_folder_(static_folder),
-      game_{game},
-      bad_request_(MakeUnique<BadRequestTypeHandler, BadRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_)) {
+      bad_request_(MakeUnique<BadRequestTypeHandler, BadRequestTypeHandler>(keeper, static_folder, handlers_redirection_)) {
     handlers_redirection_[ContentType::API_TYPE] = std::make_shared<ApiRedirection>(keeper);
 
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, HeadRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_));
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, GetRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_));
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, PostRequestTypeHandler>(game, keeper, static_folder, handlers_redirection_));
+    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, HeadRequestTypeHandler>(keeper, static_folder, handlers_redirection_));
+    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, GetRequestTypeHandler>(keeper, static_folder, handlers_redirection_));
+    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, PostRequestTypeHandler>(keeper, static_folder, handlers_redirection_));
 }
 
 message_pack_t RequestHandler::HandleRequest(StringRequest&& req) {

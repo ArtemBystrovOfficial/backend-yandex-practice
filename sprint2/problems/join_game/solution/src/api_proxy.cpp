@@ -8,9 +8,9 @@ using ec = http_handler::ErrorCodes;
 
 namespace api {
 
-ApiProxyKeeper::ApiProxyKeeper(model::Game& game) {
+ApiProxyKeeper::ApiProxyKeeper(app::App &app) {
     // V1
-    auto v1 = std::make_shared<ApiV1>(game);
+    auto v1 = std::make_shared<ApiV1>(app);
     apis_.insert({v1->GetVersionCode(), std::move(v1)});
 }
 

@@ -46,7 +46,7 @@ int main() {
         const auto address = net::ip::make_address("0.0.0.0");
         constexpr net::ip::port_type port = 8080;
 
-        model::Game game(argv[1]);
+        app::App app(argv[1]);
 
         const unsigned num_threads = std::thread::hardware_concurrency();
         net::io_context ioc(num_threads);
@@ -58,9 +58,9 @@ int main() {
             }
         });
 
-        api::ApiProxyKeeper api_keeper(game);
+        api::ApiProxyKeeper api_keeper(app);
 
-        http_handler::RequestHandler handler(game, api_keeper, argv[2]);
+        http_handler::RequestHandler handler(api_keeper, argv[2]);
 
         http_server::ServeHttp(ioc, {address, port}, [&handler](auto&& req, auto&& send) {
             handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));

@@ -143,26 +143,39 @@ class Map : public json_loader::JsonObject {
 };
 
 class Dog {
-    public:
-
+   public:
     using Id = util::Tagged<std::string, Dog>;
-    Dog() = default;
+    Dog(Id id);
 
-    private:
+    const Id& GetId();
+
+   private:
     Id id_;
 };
 
 class GameSession {
+   public:
     using Dogs = std::vector<std::shared_ptr<Dog>>;
+
+    GameSession(std::shared_ptr<Map> map);
+
+    void AddDog(std::shared_ptr<Dog> dog);
+    std::shared_ptr<Dog> FindDogByID(Dog::Id);
+
+    std::shared_ptr<Map> GetMap();
+
+    // Сделаем систему создания комнат или автоматическое распределение по картам, но сейчас одна сессия одна карта
+    size_t GetCountDogs() { return dogs_.size(); }
 
    private:
     std::shared_ptr<Map> map_;
-    Dogs dogs_;  
+    Dogs dogs_;
 };
 
 class Game : public json_loader::JsonObject {
    public:
     using Maps = std::vector<std::shared_ptr<Map>>;
+    using GameSessions = std::vector<std::shared_ptr<GameSession>>;
 
     Game() = default;
     Game(const std::filesystem::path& path) { LoadJsonFromFile(path); }
@@ -171,17 +184,22 @@ class Game : public json_loader::JsonObject {
 
     const Maps& GetMaps() const noexcept { return maps_; }
 
-    const Map* FindMap(const Map::Id& id) const noexcept;
+    std::shared_ptr<Map> FindMap(const Map::Id& id) const noexcept;
 
     void LoadJsonNode(const ptree& tree) override;
     ptree GetJsonNode() const override;
     std::string GetJsonMaps() const;
+
+    std::shared_ptr<GameSession> AddSession(Map::Id);
+    bool IsSessionStarted(Map::Id);
+    std::shared_ptr<GameSession> GetSession(Map::Id);
 
    private:
     using MapIdHasher = util::TaggedHasher<Map::Id>;
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
 
     Maps maps_;
+    GameSessions sessions_;
     MapIdToIndex map_id_to_index_;
 };
 

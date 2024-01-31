@@ -62,7 +62,7 @@ void Game::AddMap(Map map) {
         throw std::invalid_argument("Map with id "s + *map.GetId() + " already exists"s);
     } else {
         try {
-            maps_.emplace_back(std::move(map));
+            maps_.emplace_back(std::make_shared<Map>(map));
         } catch (...) {
             map_id_to_index_.erase(it);
             throw;
@@ -70,9 +70,9 @@ void Game::AddMap(Map map) {
     }
 }
 
-const Map* Game::FindMap(const Map::Id& id) const noexcept {
+std::shared_ptr<Map> Game::FindMap(const Map::Id& id) const noexcept {
     if (auto it = map_id_to_index_.find(id); it != map_id_to_index_.end()) {
-        return maps_.at(it->second).get();
+        return maps_.at(it->second);
     }
     return nullptr;
 }
@@ -100,6 +100,23 @@ std::string Game::GetJsonMaps() const {
     if (!maps_.empty()) s.pop_back();  // last ,
     s += "]";
     return s;
+}
+
+std::shared_ptr<GameSession> Game::AddSession(Map::Id id) {
+    auto map = FindMap(id);
+    if (map) {
+        auto session = std::make_shared<GameSession>(std::move(map));
+        sessions_.push_back(session);
+        return session;
+    }
+    return nullptr;
+}
+
+bool Game::IsSessionStarted(Map::Id id) { return GetSession(id) != nullptr; }
+
+std::shared_ptr<GameSession> Game::GetSession(Map::Id id) {
+    auto it = std::find_if(sessions_.begin(), sessions_.end(), [id](auto& session) { return session->GetMap()->GetId() == id; });
+    return it != sessions_.end() ? nullptr : *it;
 }
 
 void Building::LoadJsonNode(const ptree& tree) {
@@ -160,5 +177,21 @@ ptree Office::GetJsonNode() const {
     tree.put(lit::offsetY, offset_.dy);
     return tree;
 }
+
+GameSession::GameSession(std::shared_ptr<Map> map) : map_(std::move(map)) {}
+
+void GameSession::AddDog(std::shared_ptr<Dog> dog) { dogs_.push_back(std::move(dog)); }
+
+std::shared_ptr<Dog> GameSession::FindDogByID(Dog::Id id) {
+    // TODO сделать HashMap как и для карт
+    auto it = std::find_if(dogs_.begin(), dogs_.end(), [id](auto& dog1) { return dog1->GetId() == id; });
+    return it == dogs_.end() ? nullptr : *it;
+}
+
+std::shared_ptr<Map> GameSession::GetMap() { return map_; }
+
+Dog::Dog(Id id) : id_(id) {}
+
+const Dog::Id& Dog::GetId() { return id_; }
 
 }  // namespace model
