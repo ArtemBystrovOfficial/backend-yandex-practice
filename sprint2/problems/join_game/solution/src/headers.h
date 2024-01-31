@@ -28,3 +28,16 @@ using StringResponse = boost::beast::http::response<boost::beast::http::string_b
 using FileRequest = boost::beast::http::request<boost::beast::http::file_body>;
 using FileResponse = boost::beast::http::response<boost::beast::http::file_body>;
 using message_pack_t = std::variant<FileResponse, StringResponse>;
+
+struct HttpResource {
+    HttpResource(HttpResource&& http) = default;
+    HttpResource(HttpResource&) = delete;
+    HttpResource& operator=(HttpResource&&) = delete;
+
+    HttpResource(StringRequest& request, StringResponse& response, Args_t&& arguments) : req(request), resp(response), args(std::move(arguments)) {}
+    HttpResource() = delete;
+
+    StringRequest& req;
+    StringResponse& resp;
+    Args_t args;
+};
