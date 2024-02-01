@@ -35,8 +35,6 @@ void RunWorkers(unsigned n, const Fn& fn) {
 int main(int argc, const char* argv[]) {
     InitBoostLogFilter();
 
-    BOOST_LOG_TRIVIAL(debug) << *util::GenerateRandomToken();
-
     if (argc != 3) {
         std::cerr << "Usage: game_server <game-config-json> <static folder>"sv << std::endl;
         return EXIT_FAILURE;
