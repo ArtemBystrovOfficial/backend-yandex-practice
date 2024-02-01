@@ -13,7 +13,7 @@ namespace http_handler {
 
 using error_code_t = char;
 
-enum ErrorCode {
+enum ErrorCode : uint32_t {
     OK = 0x0,
     MAP_NOT_FOUNDED = 0x1,
     BAD_REQUEST = 0x2,
@@ -24,12 +24,21 @@ enum ErrorCode {
     JOIN_PLAYER_MAP = 0x7,
     JOIN_PLAYER_NAME = 0x8,
     JOIN_PLAYER_UNKNOWN = 0x9,
-    POST_NOT_ALLOWED = 0x10,
-    GET_NOT_ALLOWED = 0x11,
-    AUTHORIZATION_NOT_EXIST = 0x12,
-    AUTHORIZATION_NOT_FOUND = 0x13
+    AUTHORIZATION_NOT_EXIST = 0x10,
+    AUTHORIZATION_NOT_FOUND = 0x11,
+
+    NOT_ALLOWED = 1 << 8,
+    POST_NOT_ALLOWED = 1 << 9,
+    GET_ALLOWED = 1 << 10,
+    DELETE_ALLOWED = 1 << 11,
+    PUT_ALLOWED = 1 << 12,
+    OPTIONS_ALLOWED = 1 << 13,
+    HEAD_ALLOWED = 1 << 14,
+    PATCH_ALLOWED = 1 << 15,
 };
 
-void FillInfoError(StringResponse& resp, const ErrorCode& code, std::optional<std::string_view> custom_body = std::nullopt);
+ErrorCode& operator|=(ErrorCode& lhs, const ErrorCode& rhs);
+
+void FillInfoError(StringResponse& resp, ErrorCode code, std::optional<std::string_view> custom_body = std::nullopt);
 
 }  // namespace http_handler

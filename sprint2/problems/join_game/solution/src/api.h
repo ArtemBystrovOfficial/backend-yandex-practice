@@ -5,6 +5,7 @@
 
 #include "headers.h"
 #include "model.h"
+
 namespace api {
 
 using version_code_t = size_t;
@@ -17,16 +18,10 @@ class ApiCommon {
 
     ApiCommon() = default;
 
-    void GetFormatData(HttpResource&& resp) const;
-    void PostFormatData(HttpResource&& resp);
+    virtual void HandleApi(HttpResource&& resp) = 0;
 
     virtual int GetVersionCode() = 0;
-
     static std::string GetContentTypeString(api::ApiCommon::TypeData type);
-
-   protected:
-    std::map<std::string_view, api_handler_t> get_handlers_;
-    std::map<std::string_view, api_handler_t> post_handlers_;
 };
 
 }  // namespace api

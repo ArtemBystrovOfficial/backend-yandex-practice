@@ -20,13 +20,8 @@ std::unique_ptr<Base> static inline MakeUnique(Args&&... args) {
 class BasicRequestTypeHandler {
    public:
     BasicRequestTypeHandler() = delete;
-    BasicRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : api_keeper_(keeper),
-          static_folder_(static_folder),
-          redirection_pack_(red_pack),
-          default_redirection_(std::make_shared<FilesystemRedirection>(static_folder)) {}
+    BasicRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder);
 
-    virtual std::string_view GetMethodString() const = 0;
     virtual message_pack_t Handle(const StringRequest& req);
 
     std::shared_ptr<BasicRedirection> ExtractRequestRedirection(Args_t& args);
@@ -36,46 +31,8 @@ class BasicRequestTypeHandler {
     std::string_view static_folder_;
 
    private:
-    RedirectionPack& redirection_pack_;
+    RedirectionPack redirection_pack_;
     std::shared_ptr<FilesystemRedirection> default_redirection_;
-};
-
-class GetRequestTypeHandler : public BasicRequestTypeHandler {
-    static constexpr auto method_string_ = "GET"sv;
-
-   public:
-    GetRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
-    GetRequestTypeHandler() = delete;
-
-    message_pack_t Handle(const StringRequest& req) override;
-
-    std::string_view GetMethodString() const override { return method_string_; }
-};
-
-class HeadRequestTypeHandler : public GetRequestTypeHandler {
-    static constexpr auto method_string_ = "HEAD"sv;
-
-   public:
-    HeadRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : GetRequestTypeHandler(keeper, static_folder, red_pack) {}
-
-    message_pack_t Handle(const StringRequest& req) override;
-
-    std::string_view GetMethodString() const override { return method_string_; }
-};
-
-class PostRequestTypeHandler : public BasicRequestTypeHandler {
-    static constexpr auto method_string_ = "POST"sv;
-
-   public:
-    PostRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
-    PostRequestTypeHandler() = delete;
-
-    message_pack_t Handle(const StringRequest& req) override;
-
-    std::string_view GetMethodString() const override { return method_string_; }
 };
 
 class BadRequestTypeHandler : public BasicRequestTypeHandler {
@@ -83,13 +40,10 @@ class BadRequestTypeHandler : public BasicRequestTypeHandler {
     static constexpr auto body_content_ = "Invalid method"sv;
 
    public:
-    BadRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder, RedirectionPack& red_pack)
-        : BasicRequestTypeHandler(keeper, static_folder, red_pack) {}
+    BadRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder) : BasicRequestTypeHandler(keeper, static_folder) {}
     BadRequestTypeHandler() = delete;
 
     message_pack_t Handle(const StringRequest& req, ErrorCode status, std::optional<std::string_view> custom_body = std::nullopt);
-
-    std::string_view GetMethodString() const override { return method_string_; }
 };
 
 class RequestHandler {
@@ -108,9 +62,8 @@ class RequestHandler {
     message_pack_t HandleRequest(StringRequest&& req);
     void PreSettings(StringRequest& req);
 
-    std::vector<std::unique_ptr<BasicRequestTypeHandler>> handlers_variants_;
-    RedirectionPack handlers_redirection_;
-    std::unique_ptr<BadRequestTypeHandler> bad_request_;
+    BasicRequestTypeHandler basic_request_;
+    BadRequestTypeHandler bad_request_;
     std::string_view static_folder_;
 };
 

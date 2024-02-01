@@ -5,7 +5,20 @@
 
 #include "error_codes.h"
 
+namespace {
+namespace http = boost::beast::http;
+}
+
 namespace common_pack {
+
+message_pack_t GetBasicResponse(const StringRequest& req) {
+    StringResponse response(http::status::ok, req.version());
+    response.set(http::field::content_type, ToBSV(ContentType::TEXT_HTML));
+    common_pack::FillBody(response, "");
+    response.keep_alive(req.keep_alive());
+    message_pack_t resp = response;
+    return response;
+}
 
 std::string EncodeURL(std::string_view sv) {
     std::string str = std::string(sv.data(), sv.size());
@@ -110,6 +123,8 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
 
     res.body() = std::move(file);
     res.prepare_payload();
+
+    if (std::holds_alternative<FileResponse>(response)) std::get<FileResponse>(response).body().close();
 
     response = std::move(res);
 }

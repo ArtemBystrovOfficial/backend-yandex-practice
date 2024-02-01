@@ -47,7 +47,7 @@ class JsonObject {
     void LoadJson(std::string_view sv);
 
     static ptree GetTree(std::string_view json);
-    static std::string GetJson(const ptree& tree, bool is_format = true);
+    static std::string GetJson(const ptree& tree, bool is_format = true, bool is_remove_q_ = true);
 
     void LoadJsonFromFile(const std::filesystem::path& path);
 

@@ -21,39 +21,23 @@ std::shared_ptr<BasicRedirection> BasicRequestTypeHandler::ExtractRequestRedirec
     return default_redirection_;
 }
 
+BasicRequestTypeHandler::BasicRequestTypeHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder)
+    : api_keeper_(keeper), static_folder_(static_folder), default_redirection_(std::make_shared<FilesystemRedirection>(static_folder)) {
+    redirection_pack_[ContentType::API_TYPE] = std::make_shared<ApiRedirection>(keeper);
+}
+
 message_pack_t BasicRequestTypeHandler::Handle(const StringRequest& req) {
-    StringResponse response(http::status::ok, req.version());
-    response.set(http::field::content_type, ToBSV(ContentType::TEXT_HTML));
-    common_pack::FillBody(response, "");
-    response.keep_alive(req.keep_alive());
-    return response;
-}
+    auto resp = common_pack::GetBasicResponse(req);
 
-message_pack_t GetRequestTypeHandler::Handle(const StringRequest& req) {
-    auto resp = BasicRequestTypeHandler::Handle(req);
     auto args = common_pack::SplitUrl(ToSV(req.target()));
     auto redirection = ExtractRequestRedirection(args);
-    redirection->RedirectReadableAccess(std::move(args), resp, req);  // ONLY GET
-    return resp;
-}
+    redirection->Redirect(std::move(args), resp, req);
 
-message_pack_t HeadRequestTypeHandler::Handle(const StringRequest& req) {
-    auto rep = GetRequestTypeHandler::Handle(req);
-    if (std::holds_alternative<FileResponse>(rep)) std::get<FileResponse>(rep).body().close();
-    if (std::holds_alternative<StringResponse>(rep)) std::get<StringResponse>(rep).body().clear();
-    return rep;
-}
-
-message_pack_t PostRequestTypeHandler::Handle(const StringRequest& req) {
-    auto resp = BasicRequestTypeHandler::Handle(req);
-    auto args = common_pack::SplitUrl(ToSV(req.target()));
-    auto redirection = ExtractRequestRedirection(args);
-    redirection->RedirectWritableAccess(std::move(args), resp, req);  // ONLY GET
     return resp;
 }
 
 message_pack_t BadRequestTypeHandler::Handle(const StringRequest& req, ErrorCode status, std::optional<std::string_view> custom_body) {
-    auto resp_var = BasicRequestTypeHandler::Handle(req);
+    auto resp_var = common_pack::GetBasicResponse(req);
     auto& resp = std::get<StringResponse>(resp_var);
 
     FillInfoError(resp, status, custom_body);
@@ -62,30 +46,19 @@ message_pack_t BadRequestTypeHandler::Handle(const StringRequest& req, ErrorCode
 }
 
 RequestHandler::RequestHandler(api::ApiProxyKeeper& keeper, std::string_view static_folder)
-    : static_folder_(static_folder),
-      bad_request_(MakeUnique<BadRequestTypeHandler, BadRequestTypeHandler>(keeper, static_folder, handlers_redirection_)) {
-    handlers_redirection_[ContentType::API_TYPE] = std::make_shared<ApiRedirection>(keeper);
-
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, HeadRequestTypeHandler>(keeper, static_folder, handlers_redirection_));
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, GetRequestTypeHandler>(keeper, static_folder, handlers_redirection_));
-    handlers_variants_.push_back(MakeUnique<BasicRequestTypeHandler, PostRequestTypeHandler>(keeper, static_folder, handlers_redirection_));
-}
+    : static_folder_(static_folder), bad_request_(keeper, static_folder), basic_request_(keeper, static_folder) {}
 
 message_pack_t RequestHandler::HandleRequest(StringRequest&& req) {
     PreSettings(req);
-    auto handler = std::find_if(handlers_variants_.begin(), handlers_variants_.end(),
-                                [&req](const auto& handler) { return handler->GetMethodString() == ToSV(req.method_string()); });
-    if (handler == handlers_variants_.end()) return bad_request_->Handle(req, ErrorCode::BAD_REQUEST);
-
     try {
-        auto resp = (*handler)->Handle(req);
+        auto resp = basic_request_.Handle(req);
         return resp;
     } catch (const ErrorCode& ec) {
-        auto resp = bad_request_->Handle(req, ec);
+        auto resp = bad_request_.Handle(req, ec);
         // TODO STACK TRACE IN ASYNC CODE
         return resp;
     } catch (const std::exception& ec) {
-        auto resp = bad_request_->Handle(req, ErrorCode::UNKNOWN_ERROR, ec.what());
+        auto resp = bad_request_.Handle(req, ErrorCode::UNKNOWN_ERROR, ec.what());
         return resp;
     }
 }

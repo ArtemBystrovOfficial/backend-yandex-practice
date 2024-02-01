@@ -31,9 +31,9 @@ using message_pack_t = std::variant<FileResponse, StringResponse>;
 
 // Совмещает в себе ответ аргументы и запрос, для экономии места
 struct HttpResource {
-    HttpResource(HttpResource&& http) = default;
-    HttpResource(HttpResource&) = delete;
-    HttpResource& operator=(HttpResource&&) = delete;
+    HttpResource(HttpResource&&) = default;
+    HttpResource& operator=(HttpResource&&) = default;
+    HttpResource(const HttpResource&) = default;
 
     HttpResource(const StringRequest& request, StringResponse& response, Args_t&& arguments)
         : req(request), resp(response), args(std::move(arguments)) {}

@@ -17,6 +17,8 @@ namespace common_pack {
 
 namespace fs = std::filesystem;
 
+message_pack_t GetBasicResponse(const StringRequest& req);
+
 std::string EncodeURL(std::string_view sv);
 
 Args_t SplitUrl(std::string_view url);

@@ -27,10 +27,10 @@ ptree JsonObject::GetTree(std::string_view json) {
     return tree;
 }
 
-std::string JsonObject::GetJson(const ptree& tree, bool is_format) {
+std::string JsonObject::GetJson(const ptree& tree, bool is_format, bool is_remove_q_) {
     std::ostringstream oss;
     boost::property_tree::write_json(oss, tree, is_format);
-    return _removeAllQuotesFromNumbers(oss.str());
+    return is_remove_q_ ? _removeAllQuotesFromNumbers(oss.str()) : oss.str();
 }
 
 void JsonObject::LoadJsonFromFile(const std::filesystem::path& path) {

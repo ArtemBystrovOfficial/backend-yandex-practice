@@ -10,64 +10,51 @@ namespace ph = std::placeholders;
 using ec = http_handler::ErrorCode;
 }  // namespace
 
-namespace api {
+namespace api_v1 {
 
-ApiV1::ApiV1(app::App& app) : app_(app) {
-    // Нужна помощь как разграничить const от обычнынх обработчиков void() и void()const для post_handlers_ и get_handlers_
-    get_handlers_.insert({"maps"sv, std::bind(&ApiV1::GetMapHandler, this, ph::_1)});
-    get_handlers_.insert({"game"sv, std::bind(&ApiV1::GetGameHandler, this, ph::_1)});
-    // et_handlers_.insert({"maps"sv, std::bind(&ApiV1::PostMapHandler, this, ph::_1, ph::_2)});
-
-    post_handlers_.insert({"game"sv, std::bind(&ApiV1::PostGameHandler, this, ph::_1)});
+Api::Api(app::App& app) {
+    api_classes_["maps"] = std::make_unique<Maps>(app);
+    api_classes_["game"] = std::make_unique<Game>(app);
 }
 
-int ApiV1::GetVersionCode() { return 0x1; }
+int Api::GetVersionCode() { return 0x1; }
 
-void ApiV1::GetMapHandler(HttpResource&& res) const {
-    res.resp.set(http::field::content_type, ToBSV(ContentType::JSON));
+void Api::HandleApi(HttpResource&& res) {
+    if (res.args.empty()) throw ec::BAD_REQUEST;
+    auto val = res.args.front();
+    res.args.pop_front();
 
-    if (res.args.empty()) {
-        return common_pack::FillBody(res.resp, GetMapListJson());
-    } else if (res.args.size() == 1) {
-        return common_pack::FillBody(res.resp, GetMapDescriptionJson(res.args.back()));
-    }
+    auto it = api_classes_.find(val);
+    if (it == api_classes_.end()) throw ec::BAD_REQUEST;
 
-    throw ec::GET_NOT_ALLOWED;
+    HttpResource copy = res;
+
+    if (!it->second->RedirectAutomatic(std::move(res))) throw method_handler::MakeAllowError(std::move(copy), it->second.get());
 }
 
-void ApiV1::PostMapHandler(HttpResource&& res) {
-    if (res.args.empty())  // Version Category
-        throw ec::POST_NOT_ALLOWED;
-}
-
-std::string api::ApiV1::GetMapListJson() const { return app_.GetGame().GetJsonMaps(); }
-
-std::string api::ApiV1::GetMapDescriptionJson(std::string_view id) const {
-    auto map = app_.GetGame().FindMap(model::Map::Id(std::string(id.data(), id.size())));
-    if (!map) throw ec::MAP_NOT_FOUNDED;
-    return map->GetJson();
-}
-
-void ApiV1::GetGameHandler(HttpResource&& res) const {
+bool Game::GetHandler(HttpResource&& res, bool is_ping) {
     if (res.args.size() == 1) {
         auto arg = res.args.front();
         res.args.pop_front();
-        if (arg == "players"sv) return GetPlayers(std::move(res));
+        if (arg == "players"sv) {
+            CALL_WITH_PING(is_ping, GetPlayers(std::move(res)))
+        }
     }
-
-    throw ec::GET_NOT_ALLOWED;
+    return false;
 }
 
-void ApiV1::PostGameHandler(HttpResource&& res) {
+bool Game::PostHandler(HttpResource&& res, bool is_ping) {
     if (res.args.size() == 1) {
         auto arg = res.args.front();
         res.args.pop_front();
-        if (arg == "join"sv) return AddNewPlayer(std::move(res));
+        if (arg == "join"sv) {
+            CALL_WITH_PING(is_ping, AddNewPlayer(std::move(res)));
+        }
     }
-    throw ec::POST_NOT_ALLOWED;
+    return false;
 }
 
-void ApiV1::AddNewPlayer(HttpResource&& res) {
+void Game::AddNewPlayer(HttpResource&& res) {
     if (ToSV(res.req[http::field::content_type]) != ContentType::JSON)
         throw ec::POST_NOT_ALLOWED;  // TODO сделать также автоматический опрос по всем типам ожидаемого контента
     res.resp.set(http::field::content_type, res.req[http::field::content_type]);
@@ -90,14 +77,14 @@ void ApiV1::AddNewPlayer(HttpResource&& res) {
     common_pack::FillBody(res.resp, json_loader::JsonObject::GetJson(json, false));
 }
 
-void ApiV1::GetPlayers(HttpResource&& res) const {
+void Game::GetPlayers(HttpResource&& res) const {
     res.resp.set(http::field::content_type, res.req[http::field::content_type]);
     res.resp.set(http::field::cache_control, "no-cache");
 
     std::string_view token;
 
     try {
-        auto token = ToSV(res.req[http::field::authorization]);
+        token = ToSV(res.req[http::field::authorization]);
 
     } catch (...) {
         throw ec::AUTHORIZATION_NOT_EXIST;
@@ -114,7 +101,27 @@ void ApiV1::GetPlayers(HttpResource&& res) const {
         dog_json.put("name", dog->GetName());
         list_json.add_child(std::to_string(*dog->GetId()), dog_json);
     }
-    common_pack::FillBody(res.resp, json_loader::JsonObject::GetJson(list_json, false));
+    common_pack::FillBody(res.resp, json_loader::JsonObject::GetJson(list_json, false, false));
 }
 
-}  // namespace api
+bool Maps::GetHandler(HttpResource&& res, bool is_ping) {
+    res.resp.set(http::field::content_type, ToBSV(ContentType::JSON));
+
+    if (res.args.empty()) {
+        CALL_WITH_PING(is_ping, common_pack::FillBody(res.resp, GetMapListJson()))
+    } else if (res.args.size() == 1) {
+        CALL_WITH_PING(is_ping, common_pack::FillBody(res.resp, GetMapDescriptionJson(res.args.back())));
+    }
+
+    return false;
+}
+
+std::string Maps::GetMapListJson() const { return app_.GetGame().GetJsonMaps(); }
+
+std::string Maps::GetMapDescriptionJson(std::string_view id) const {
+    auto map = app_.GetGame().FindMap(model::Map::Id(std::string(id.data(), id.size())));
+    if (!map) throw ec::MAP_NOT_FOUNDED;
+    return map->GetJson();
+}
+
+}  // namespace api_v1

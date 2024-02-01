@@ -2,39 +2,45 @@
 
 #include "api.h"
 #include "app.h"
+#include "method_handler.h"
 #include "model.h"
 
-namespace api {
+namespace api_v1 {
 
-class ApiV1 : public ApiCommon {
+using Methods = method_handler::MethodHandler;
+
+class Game : public Methods {
    public:
-    ApiV1(app::App &app);
+    Game(app::App &app) : Methods(app) {}
 
-    int GetVersionCode() override;
+    bool GetHandler(HttpResource &&, bool is_ping = false) override;
+    bool PostHandler(HttpResource &&, bool is_ping = false) override;
 
    private:
-    // Пока api небольшое все методы в один класс, добавить обработчики классы для всех типов запросов
-
-    ///////////////////////
-    // MAPS
-    ///////////////////////
-    void GetMapHandler(HttpResource &&) const;
-    void PostMapHandler(HttpResource &&);
-
-    std::string GetMapListJson() const;
-    std::string GetMapDescriptionJson(std::string_view) const;
-
-    ///////////////////////
-    // GAME
-    ///////////////////////
-
-    void GetGameHandler(HttpResource &&) const;
-    void PostGameHandler(HttpResource &&);
-
     void AddNewPlayer(HttpResource &&);
     void GetPlayers(HttpResource &&) const;
-
-    app::App &app_;
 };
 
-}  // namespace api
+class Maps : public method_handler::MethodHandler {
+   public:
+    Maps(app::App &app) : Methods(app) {}
+
+    bool GetHandler(HttpResource &&, bool is_ping = false) override;
+
+   private:
+    std::string GetMapListJson() const;
+    std::string GetMapDescriptionJson(std::string_view) const;
+};
+
+class Api : public api::ApiCommon {
+   public:
+    Api(app::App &app);
+
+    int GetVersionCode() override;
+    void HandleApi(HttpResource &&resp) override;
+
+   private:
+    std::map<std::string, std::unique_ptr<Methods>, std::less<> > api_classes_;
+};
+
+}  // namespace api_v1

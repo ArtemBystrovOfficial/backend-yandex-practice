@@ -10,7 +10,7 @@ namespace api {
 
 ApiProxyKeeper::ApiProxyKeeper(app::App &app) {
     // V1
-    auto v1 = std::make_shared<ApiV1>(app);
+    auto v1 = std::make_shared<api_v1::Api>(app);
     apis_.insert({v1->GetVersionCode(), std::move(v1)});
 }
 
