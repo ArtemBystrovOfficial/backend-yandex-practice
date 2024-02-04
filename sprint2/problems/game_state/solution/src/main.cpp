@@ -32,12 +32,12 @@ void RunWorkers(unsigned n, const Fn& fn) {
 
 }  // namespace
 
-int main(/*int argc, char* argv[]*/) {
+int main(int argc, char* argv[]) {
     InitBoostLogFilter();
 
     // DEBUG
-    int argc = 3;
-    const char* argv[] = {"", "../../data/config.json", "../../static"};
+    //int argc = 3;
+    //const char* argv[] = {"", "../../data/config.json", "../../static"};
 
     if (argc != 3) {
         std::cerr << "Usage: game_server <game-config-json> <static folder>"sv << std::endl;
