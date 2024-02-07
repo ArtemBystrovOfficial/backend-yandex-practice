@@ -218,8 +218,8 @@ void Game::GetState(HttpResource&& res) const {
         CreateRoundedNode(pos_pt, dog->GetPosition().y);
 
         boost::property_tree::ptree speed_pt;
-        CreateRoundedNode(pos_pt, dog->GetSpeed().x);
-        CreateRoundedNode(pos_pt, dog->GetSpeed().y);
+        CreateRoundedNode(speed_pt, dog->GetSpeed().x);
+        CreateRoundedNode(speed_pt, dog->GetSpeed().y);
 
         dog_json.add_child("pos", pos_pt);
         dog_json.add_child("speed", speed_pt);
