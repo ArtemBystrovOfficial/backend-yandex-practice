@@ -190,9 +190,23 @@ void Game::GetState(HttpResource&& res) const {
     auto token_raw = util::ExecuteAuthorized(res);
     auto dogs = app_.GetPlayers().GetListDogInRoom(util::CreateTokenByAuthorizationString(token_raw));
 
+    //Из-за проблем с Json и точностью на тестах пока что про число с плавающей точкой обрабатываются данным образом
+    //В дальнешем найти алтеранативу или совсем убрать округление кординат когда тесты пройдут
     auto ROUND_VALUE_FOR_TEST = [](double value) -> double {
         return std::round(value * std::pow(10, 6)) / std::pow(10, 6);
     };
+
+    auto CreateRoundedNode = [&](boost::property_tree::ptree & node, auto & value) -> boost::property_tree::ptree  {
+
+        if (fmod(value, 1.0) != 0.0) {
+            node.push_back({"", boost::property_tree::ptree().put("", ROUND_VALUE_FOR_TEST(value))});
+        } else {
+            node.push_back({"", boost::property_tree::ptree().put("", std::to_string(int(value)) + "f")});
+        }
+
+        return node;
+    };
+
 
     ptree main_json;  // TODO продумать как кастомные json файлы можно применить к системе модели
     ptree list_json;
@@ -200,26 +214,12 @@ void Game::GetState(HttpResource&& res) const {
         ptree dog_json;
 
         boost::property_tree::ptree pos_pt;
-        if(fmod(dog->GetPosition().x,1.0f) != 0.0f)
-            pos_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetPosition().x))});
-        else
-            pos_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetPosition().x)) + "f")});
- 
-        if(fmod(dog->GetPosition().y,1.0f) != 0.0f)
-            pos_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetPosition().y))});
-        else
-            pos_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetPosition().y)) + "f")});
+        CreateRoundedNode(pos_pt, dog->GetPosition().x);
+        CreateRoundedNode(pos_pt, dog->GetPosition().y);
 
         boost::property_tree::ptree speed_pt;
-        if(fmod(dog->GetSpeed().x,1.0f) != 0.0f)
-            speed_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetSpeed().x))});
-        else
-            speed_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetSpeed().x)) + "f")});
-
-        if(fmod(dog->GetSpeed().y,1.0f) != 0.0f)
-            speed_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetSpeed().y))});
-        else
-            speed_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetSpeed().y)) + "f")});
+        CreateRoundedNode(pos_pt, dog->GetSpeed().x);
+        CreateRoundedNode(pos_pt, dog->GetSpeed().y);
 
         dog_json.add_child("pos", pos_pt);
         dog_json.add_child("speed", speed_pt);
