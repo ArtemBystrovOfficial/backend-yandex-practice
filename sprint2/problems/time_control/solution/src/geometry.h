@@ -2,7 +2,7 @@
 
 #include <vector>
 
-using Real = float;
+using Real = double;
 
 struct PointF {
     Real x, y;

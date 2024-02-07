@@ -169,7 +169,7 @@ std::vector<gl::Box> Map::GetRectsByRoads() {
             }
         }
 
-        vec.push_back({{x1, y1}, {x2, y2}});
+        vec.push_back({{std::min(x1,x2), std::min(y1,y2)}, {std::max(x1, x2), std::max(y1,y2)}});
     }
     return vec;
 }
@@ -351,6 +351,7 @@ bool Dog::MoveDog(Direction direction) {
         default:
             return false;
     }
+    direction_ = direction;
     return true;
 }
 

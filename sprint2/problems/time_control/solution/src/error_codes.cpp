@@ -44,6 +44,12 @@ void FillInfoError(StringResponse& resp, ErrorCode ec_code, std::optional<std::s
             code = "badRequest"sv;
             message = "badRequest"sv;
             break;
+        case ErrorCode::BAD_REQUEST_TICK:
+            resp.result(http::status::bad_request);
+            code = "invalidArgument"sv;
+            message = "Failed to parse tick request JSON"sv;
+            resp.set(http::field::cache_control, "no-cache");
+            break;
         case ErrorCode::MAP_NOT_FOUNDED:
             resp.result(http::status::not_found);
             code = "mapNotFound"sv;

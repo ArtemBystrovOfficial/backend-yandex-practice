@@ -5,9 +5,11 @@
 namespace json_loader {
 std::string _removeAllQuotesFromNumbers(const std::string& str) {
     std::string jsonString;
-    std::regex numberRegex("\"(\\d*\\.?\\d+)\"");  // Все числа будут без кавычек, если хотим число как строку добавляем в конце S
+    std::regex numberRegex("\"(-?\\d*\\.?\\d+)\"");  // Все числа будут без кавычек, если хотим число как строку добавляем в конце S
+    std::regex regex_pattern("\"(-?\\d+)f\"");
     std::regex numberSRegex("\"(\\d*\\.?\\d+)S\"");
     jsonString = std::regex_replace(str, numberRegex, "$1");
+    jsonString = std::regex_replace(jsonString, regex_pattern, "$1.0");
     jsonString = std::regex_replace(jsonString, numberSRegex, "\"$1\"");
     return jsonString;
 }

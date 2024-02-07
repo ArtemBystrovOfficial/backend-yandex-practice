@@ -34,6 +34,7 @@ void Api::HandleApi(HttpResource&& res) {
 
     ec er = ec::OK;
     std::optional<std::exception> exep_msg;
+    res.resp.set(http::field::cache_control, "no-cache");
 
     net::dispatch(strand_, [&exep_msg, &er, &redirect, &res, &copy] {  // SYNS FOR THIS THREAD LOCK TO OTHER THREADS
         try {
@@ -149,8 +150,11 @@ void Game::Tick(HttpResource&& res) {
         auto tree = json_loader::JsonObject::GetTree(res.req.body());
         time_delta = atoi(tree.get<std::string>("timeDelta").c_str());
     } catch (...) {
-        throw ec::BAD_REQUEST;
+        throw ec::BAD_REQUEST_TICK;
     }
+
+    if(time_delta <= 0)
+        throw ec::BAD_REQUEST_TICK;
 
     app_.GetMutableGame().TickFullGame(std::chrono::milliseconds(time_delta));
 
@@ -186,17 +190,36 @@ void Game::GetState(HttpResource&& res) const {
     auto token_raw = util::ExecuteAuthorized(res);
     auto dogs = app_.GetPlayers().GetListDogInRoom(util::CreateTokenByAuthorizationString(token_raw));
 
+    auto ROUND_VALUE_FOR_TEST = [](double value) -> double {
+        return std::round(value * std::pow(10, 6)) / std::pow(10, 6);
+    };
+
     ptree main_json;  // TODO продумать как кастомные json файлы можно применить к системе модели
     ptree list_json;
     for (const auto& dog : dogs) {
         ptree dog_json;
 
         boost::property_tree::ptree pos_pt;
-        pos_pt.push_back({"", ptree().put("", dog->GetPosition().x)});
-        pos_pt.push_back({"", ptree().put("", dog->GetPosition().y)});
+        if(fmod(dog->GetPosition().x,1.0f) != 0.0f)
+            pos_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetPosition().x))});
+        else
+            pos_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetPosition().x)) + "f")});
+ 
+        if(fmod(dog->GetPosition().y,1.0f) != 0.0f)
+            pos_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetPosition().y))});
+        else
+            pos_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetPosition().y)) + "f")});
+
         boost::property_tree::ptree speed_pt;
-        speed_pt.push_back({"", ptree().put("", dog->GetSpeed().x)});
-        speed_pt.push_back({"", ptree().put("", dog->GetSpeed().y)});
+        if(fmod(dog->GetSpeed().x,1.0f) != 0.0f)
+            speed_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetSpeed().x))});
+        else
+            speed_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetSpeed().x)) + "f")});
+
+        if(fmod(dog->GetSpeed().y,1.0f) != 0.0f)
+            speed_pt.push_back({"", ptree().put("", ROUND_VALUE_FOR_TEST(dog->GetSpeed().y))});
+        else
+            speed_pt.push_back({"", ptree().put("", std::to_string(int(dog->GetSpeed().y)) + "f")});
 
         dog_json.add_child("pos", pos_pt);
         dog_json.add_child("speed", speed_pt);

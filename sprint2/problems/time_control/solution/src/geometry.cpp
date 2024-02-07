@@ -1,4 +1,5 @@
 #include "geometry.h"
+
 namespace geometry_local {
 PointF Line::GetIntersect(const Line& line) const {
     PointF intersection;
@@ -23,12 +24,18 @@ PointF Line::GetIntersect(const Line& line) const {
 
     return intersection;
 }
-bool Line::isBetween(double a, double b, double c) const { return a <= b && b <= c; }
+bool Line::isBetween(double a, double b, double c) const { 
+    if(a>c)
+        std::swap(a, c);
+    Real kof_inac = 0.001;
+    return (a - kof_inac <= b && b <= c + kof_inac); 
+}
 bool Line::isPointOnSegment(const PointF p, const PointF start, const PointF end) const {
     return isBetween(start.x, p.x, end.x) && isBetween(start.y, p.y, end.y);
 }
 bool Box::CheckContains(const PointF& point) const {
-    return point.x >= left_down.x && point.x <= right_up.x && point.y >= left_down.y && point.y <= right_up.y;
+    Real kof_inac = 0.001;
+    return point.x >= left_down.x - kof_inac && point.x <= right_up.x + kof_inac && point.y >= left_down.y - kof_inac  && point.y <= right_up.y + kof_inac;
 }
 void Box::FillIntersects(ListPoints& list, const Line& line) const {
     PointF right_down = {right_up.x, left_down.y}, left_up = {left_down.x, right_up.y};
