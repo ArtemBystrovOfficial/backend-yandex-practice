@@ -73,8 +73,18 @@ void RunWorkers(unsigned n, const Fn& fn) {
 
 }  // namespace
 
-int main(int argc, char* argv[]) {
+int main(/*int argc, char* argv[]*/) {
     InitBoostLogFilter();
+
+    int argc = 7;
+    char* argv[] = {
+                "app",      
+                "--config-file", 
+               "../../data/config.json",
+              "--www-root",
+              "../../static",
+              "--tick-period",
+              "50"};
 
     try {
         if (auto opt = ParseCommandLine(argc, argv)) {
@@ -114,7 +124,7 @@ int main(int argc, char* argv[]) {
 
             api::ApiProxyKeeper api_keeper(api_strand, app);
 
-            http_handler::RequestHandler handler(api_keeper, args.static_path);
+            http_handler::RequestHandler handler(api_strand, api_keeper, args.static_path);
 
             http_server::ServeHttp(ioc, {address, port}, [&handler](auto&& req, auto&& send) {
                 handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));

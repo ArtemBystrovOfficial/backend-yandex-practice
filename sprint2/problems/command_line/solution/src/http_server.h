@@ -47,7 +47,7 @@ class SessionBase {
     virtual std::shared_ptr<SessionBase> GetSharedThis() = 0;
 
    protected:
-    explicit SessionBase(tcp::socket&& socket) : stream_(std::move(socket)) {}
+    explicit SessionBase(tcp::socket&& socket, net::io_context& ioc) : stream_(std::move(socket)), ioc_(ioc) {}
     ~SessionBase() = default;
 
     template <typename Body, typename Fields>
@@ -72,14 +72,15 @@ class SessionBase {
     beast::tcp_stream stream_;
     beast::flat_buffer buffer_;
     HttpRequest request_;
+    net::io_context& ioc_;
 };
 
 template <typename RequestHandler>
 class Session : public SessionBase, public std::enable_shared_from_this<Session<RequestHandler>> {
    public:
     template <typename Handler>
-    Session(tcp::socket&& socket, Handler&& request_handler)
-        : SessionBase(std::move(socket)), request_handler_(std::forward<Handler>(request_handler)) {}
+    Session(tcp::socket&& socket, Handler&& request_handler, net::io_context& ioc_)
+        : SessionBase(std::move(socket), ioc_), request_handler_(std::forward<Handler>(request_handler))  {}
 
    private:
     std::shared_ptr<SessionBase> GetSharedThis() override { return this->shared_from_this(); }
@@ -119,7 +120,7 @@ class Listener : public std::enable_shared_from_this<Listener<RequestHandler>> {
         DoAccept();
     }
 
-    void AsyncRunSession(tcp::socket&& socket) { std::make_shared<Session<RequestHandler>>(std::move(socket), request_handler_)->Run(); }
+    void AsyncRunSession(tcp::socket&& socket) { std::make_shared<Session<RequestHandler>>(std::move(socket), request_handler_, ioc_)->Run(); }
 
     net::io_context& ioc_;
     tcp::acceptor acceptor_;

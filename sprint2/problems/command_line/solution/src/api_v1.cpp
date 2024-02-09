@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "error_codes.h"
+#include "logger.h"
 
 namespace {
 namespace http = boost::beast::http;
@@ -31,26 +32,7 @@ void Api::HandleApi(HttpResource&& res) {
     auto& redirect = it;
 
     HttpResource copy = res;
-
-    ec er = ec::OK;
-    std::optional<std::exception> exep_msg;
-    res.resp.set(http::field::cache_control, "no-cache");
-
-    net::dispatch(strand_, [&exep_msg, &er, &redirect, &res, &copy] {  // SYNS FOR THIS THREAD LOCK TO OTHER THREADS
-        try {
-            if (!redirect->second->RedirectAutomatic(std::move(res))) throw method_handler::MakeAllowError(std::move(copy), redirect->second.get());
-        } catch (ec er_code) {
-            er = er_code;
-        } catch (const std::exception& exp) {
-            exep_msg = exp;
-        } catch (...) {
-            exep_msg = std::runtime_error("unknown");
-        }
-    });
-    if (er != ec::OK)
-        throw er;
-    else if (exep_msg)
-        throw *exep_msg;
+    if (!redirect->second->RedirectAutomatic(std::move(res))) throw method_handler::MakeAllowError(std::move(copy), redirect->second.get());
 }
 
 //////// GAME ///////////

@@ -4,6 +4,7 @@
 #include "app.h"
 #include "method_handler.h"
 #include "model.h"
+#include <mutex>
 
 namespace api_v1 {
 
@@ -42,7 +43,7 @@ class Api : public api::ApiCommon {
     Api(strand_t &strand, app::App &app);
 
     int GetVersionCode() override;
-    void HandleApi(HttpResource &&resp) override;
+    void HandleApi(HttpResource && resp) override;
 
    private:
     std::map<std::string, std::unique_ptr<Methods>, std::less<> > api_classes_;
