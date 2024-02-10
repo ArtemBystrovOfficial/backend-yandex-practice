@@ -23,16 +23,19 @@ Api::Api(strand_t& strand, app::App& app) : ApiCommon(strand) {
 int Api::GetVersionCode() { return 0x1; }
 
 void Api::HandleApi(HttpResource&& res) {
-    if (res.args.empty()) throw ec::BAD_REQUEST;
+    if (res.args.empty()) 
+        throw ec::BAD_REQUEST;
     auto val = util::ExtractArg(res.args);
 
     auto it = api_classes_.find(val);
-    if (it == api_classes_.end()) throw ec::BAD_REQUEST;
+    if (it == api_classes_.end()) 
+        throw ec::BAD_REQUEST;
 
     auto& redirect = it;
 
     HttpResource copy = res;
-    if (!redirect->second->RedirectAutomatic(std::move(res))) throw method_handler::MakeAllowError(std::move(copy), redirect->second.get());
+    if (!redirect->second->RedirectAutomatic(std::move(res))) 
+        throw method_handler::MakeAllowError(std::move(copy), redirect->second.get());
 }
 
 //////// GAME ///////////
@@ -40,29 +43,39 @@ void Api::HandleApi(HttpResource&& res) {
 bool Game::GetHandler(HttpResource&& res, bool is_ping) {
     if (res.args.size() == 1) {
         auto arg = util::ExtractArg(res.args);
-        if (arg == "players"sv) CALL_WITH_PING(is_ping, GetPlayers(std::move(res)))
-        if (arg == "state"sv) CALL_WITH_PING(is_ping, GetState(std::move(res)))
+        if (arg == "players"sv) {
+            CALL_WITH_PING(is_ping, GetPlayers(std::move(res)))
+        }
+        if (arg == "state"sv) {
+            CALL_WITH_PING(is_ping, GetState(std::move(res)))
+        }
     }
     return false;
 }
 
 bool Game::PostHandler(HttpResource&& res, bool is_ping) {
     if (res.args.size() == 1) {
-        auto arg = util::ExtractArg(res.args);
-        if (arg == "join"sv) CALL_WITH_PING(is_ping, AddNewPlayer(std::move(res)));
-        if (arg == "tick"sv) CALL_WITH_PING(is_ping, Tick(std::move(res)));
+            auto arg = util::ExtractArg(res.args);
+        if (arg == "join"sv) { 
+            CALL_WITH_PING(is_ping, AddNewPlayer(std::move(res)));
+        }
+        if (arg == "tick"sv) {
+            CALL_WITH_PING(is_ping, Tick(std::move(res)));
+        }
     } else if (res.args.size() == 2) {
         auto arg = util::ExtractArg(res.args);
         if (arg == "player"sv) {
             auto arg = util::ExtractArg(res.args);
-            if (arg == "action") CALL_WITH_PING(is_ping, MovePlayer(std::move(res)))
+            if (arg == "action") {
+                CALL_WITH_PING(is_ping, MovePlayer(std::move(res)))
+            }
         }
     }
     return false;
 }
 
 void Game::AddNewPlayer(HttpResource&& res) {
-    if (ToSV(res.req[http::field::content_type]) != ContentType::JSON)
+    if (util::ToSV(res.req[http::field::content_type]) != ContentType::JSON)
         throw ec::POST_NOT_ALLOWED;  // TODO сделать также автоматический опрос по всем типам ожидаемого контента
     res.resp.set(http::field::content_type, res.req[http::field::content_type]);
     res.resp.set(http::field::cache_control, "no-cache");
@@ -78,7 +91,8 @@ void Game::AddNewPlayer(HttpResource&& res) {
     }
     auto [player, token] = app_.GetMutablePlayers().AddPlayer(name, model::Map::Id(map_id));
 
-    if (!player) throw ec::JOIN_PLAYER_UNKNOWN;
+    if (!player) 
+        throw ec::JOIN_PLAYER_UNKNOWN;
 
     auto json = json_loader::CreateTrivialJson({"authToken", "playerId"}, *token, *player->dog_->GetId());
 
@@ -149,7 +163,7 @@ void Game::Tick(HttpResource&& res) {
 //////// MAPS ///////////
 
 bool Maps::GetHandler(HttpResource&& res, bool is_ping) {
-    res.resp.set(http::field::content_type, ToBSV(ContentType::JSON));
+    res.resp.set(http::field::content_type, util::ToSV(ContentType::JSON));
 
     if (res.args.empty()) {
         CALL_WITH_PING(is_ping, util::FillBody(res.resp, GetMapListJson()))
@@ -164,7 +178,8 @@ std::string Maps::GetMapListJson() const { return app_.GetGame().GetJsonMaps(); 
 
 std::string Maps::GetMapDescriptionJson(std::string_view id) const {
     auto map = app_.GetGame().FindMap(model::Map::Id(std::string(id.data(), id.size())));
-    if (!map) throw ec::MAP_NOT_FOUNDED;
+    if (!map) 
+        throw ec::MAP_NOT_FOUNDED;
     return map->GetJson();
 }
 

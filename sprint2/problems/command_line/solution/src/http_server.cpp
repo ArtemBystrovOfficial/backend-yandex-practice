@@ -52,8 +52,9 @@ void SessionBase::OnRead(beast::error_code ec, std::size_t bytes_read) {
     HandleRequest(std::move(request_));
 }
 void SessionBase::Close() {
-    beast::error_code ec;
-    stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
+    try {
+        stream_.socket().shutdown(tcp::socket::shutdown_send);
+    }catch(...) {}
 }
 void SessionBase::OnWrite(bool close, beast::error_code ec, std::size_t bytes_written) {
     if (ec) {

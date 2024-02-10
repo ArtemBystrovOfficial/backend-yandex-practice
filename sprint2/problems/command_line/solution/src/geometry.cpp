@@ -27,8 +27,8 @@ PointF Line::GetIntersect(const Line& line) const {
 bool Line::isBetween(double a, double b, double c) const { 
     if(a>c)
         std::swap(a, c);
-    Real kof_inac = 0.001;
-    return (a - kof_inac <= b && b <= c + kof_inac); 
+    Real inaccuracy = 0.001;
+    return (a - inaccuracy <= b && b <= c + inaccuracy); 
 }
 bool Line::isPointOnSegment(const PointF p, const PointF start, const PointF end) const {
     return isBetween(start.x, p.x, end.x) && isBetween(start.y, p.y, end.y);
@@ -44,7 +44,8 @@ void Box::FillIntersects(ListPoints& list, const Line& line) const {
 
     for (auto& side : sides) {
         auto point = line.GetIntersect(side);
-        if (point.has_valid) list.push_back(point);
+        if (point.has_valid) 
+            list.push_back(point);
     }
 }
 void SortLinePoints(ListPoints& points, Direction direction) {

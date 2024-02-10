@@ -14,7 +14,7 @@ struct Player {
 class Players {
    public:
     using Players_t = std::map<util::Token, std::shared_ptr<Player>>;
-    Players(model::Game& game);
+    explicit Players(model::Game& game);
 
     const std::vector<std::shared_ptr<model::Dog>>& GetListDogInRoom(const util::Token&) const noexcept(false);
     std::pair<std::shared_ptr<Player>, util::Token> AddPlayer(std::string_view dog_name, const model::Map::Id& map_id) noexcept(false);

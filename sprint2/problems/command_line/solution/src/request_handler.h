@@ -32,7 +32,7 @@ class RequestHandler {
         //send(HandleRequest(std::forward<decltype(req)>(req)));
 
         PreSettings(req);
-        auto args = util::SplitUrl(ToSV(req.target()));
+        auto args = util::SplitUrl(util::ToSV(req.target()));
         auto resp_var = util::GetBasicResponse(req);
         //Здесь должен был полифорфизм переадресации корневого сегмента,
         //но strand немного поменял правила, позже вернуть 

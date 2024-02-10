@@ -23,9 +23,11 @@ std::pair<std::shared_ptr<Player>, util::Token> Players::AddPlayer(std::string_v
     else
         game_session = game_.GetSession(map_id);
 
-    if (dog_name.empty()) throw ec::JOIN_PLAYER_NAME;
+    if (dog_name.empty()) 
+        throw ec::JOIN_PLAYER_NAME;
 
-    if (!game_session) throw ec::JOIN_PLAYER_MAP;
+    if (!game_session) 
+        throw ec::JOIN_PLAYER_MAP;
 
     auto dog = game_session->AddDog(dog_name);
 
@@ -40,14 +42,17 @@ std::shared_ptr<Player> Players::FindByToken(const util::Token& token) const {
 }
 void Players::MovePlayer(const util::Token& token, std::string_view direction) const noexcept(false) {
     auto player = GetPlayerWithCheck(token);
-    if (direction.empty()) player->dog_->StopDog();
+    if (direction.empty()) {
+        player->dog_->StopDog();
+    }
     if (direction.size() == 1) {
         if (!GetPlayerWithCheck(token)->dog_->MoveDog(static_cast<model::Direction>(direction.back()))) throw ec::BAD_REQUEST;
     }
 }
 std::shared_ptr<Player> Players::GetPlayerWithCheck(const util::Token& token) const noexcept(false) {
     auto player = FindByToken(token);
-    if (!player) throw ec::AUTHORIZATION_NOT_FOUND;
+    if (!player) 
+        throw ec::AUTHORIZATION_NOT_FOUND;
     return player;
 }
 

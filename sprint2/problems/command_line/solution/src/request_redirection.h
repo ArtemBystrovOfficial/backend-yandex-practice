@@ -17,7 +17,7 @@ class BasicRedirection {
 
 class ApiRedirection : public BasicRedirection {
    public:
-    ApiRedirection(api::ApiProxyKeeper& api_keeper);
+    explicit ApiRedirection(api::ApiProxyKeeper& api_keeper);
 
     void Redirect(Args_t&&, message_pack_t& resp, const StringRequest& req) override;
 
@@ -27,7 +27,7 @@ class ApiRedirection : public BasicRedirection {
 
 class FilesystemRedirection : public BasicRedirection {
    public:
-    FilesystemRedirection(std::string_view static_folder);
+    explicit FilesystemRedirection(std::string_view static_folder);
 
     void Redirect(Args_t&&, message_pack_t& resp, const StringRequest& req) override;
 

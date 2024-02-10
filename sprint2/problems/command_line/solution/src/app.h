@@ -7,7 +7,7 @@ namespace app {
 // Facade
 class App {
    public:
-    App(const std::filesystem::path& settings_json);
+    explicit App(const std::filesystem::path& settings_json);
 
     const Players& GetPlayers() const { return players_; }
     Players& GetMutablePlayers() { return players_; }

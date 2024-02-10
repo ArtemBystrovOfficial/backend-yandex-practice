@@ -13,7 +13,7 @@ using Methods = method_handler::MethodHandler;
 
 class Game : public Methods {
    public:
-    Game(app::App &app) : Methods(app) {}
+    explicit Game(app::App &app) : Methods(app) {}
 
     bool GetHandler(HttpResource &&, bool is_ping = false) override;
     bool PostHandler(HttpResource &&, bool is_ping = false) override;
@@ -29,7 +29,7 @@ class Game : public Methods {
 
 class Maps : public Methods {
    public:
-    Maps(app::App &app) : Methods(app) {}
+    explicit Maps(app::App &app) : Methods(app) {}
 
     bool GetHandler(HttpResource &&, bool is_ping = false) override;
 

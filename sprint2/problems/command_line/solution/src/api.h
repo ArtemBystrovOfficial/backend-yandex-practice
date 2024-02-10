@@ -18,7 +18,7 @@ class ApiCommon {
    public:
     enum class TypeData { JSON, HTML, PLAIN };
 
-    ApiCommon(strand_t & strand) : strand_(strand){};
+    explicit ApiCommon(strand_t & strand) : strand_(strand){};
 
     virtual void HandleApi(HttpResource&& resp) = 0;
 

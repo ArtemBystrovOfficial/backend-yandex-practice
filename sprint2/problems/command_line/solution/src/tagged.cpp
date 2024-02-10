@@ -24,8 +24,10 @@ Token GenerateRandomToken() {
 }
 
 Token CreateTokenByAuthorizationString(std::string_view token_raw) noexcept(false) {
-    if (token_raw.substr(0, 7) == "Bearer "sv) token_raw.remove_prefix(7);
-    if (token_raw.size() != util::TOKEN_SIZE) throw ec::AUTHORIZATION_NOT_EXIST;
+    if (token_raw.substr(0, 7) == "Bearer "sv) 
+        token_raw.remove_prefix(7);
+    if (token_raw.size() != util::TOKEN_SIZE) 
+        throw ec::AUTHORIZATION_NOT_EXIST;
     return Token{std::string(token_raw.data(), token_raw.size())};
 }
 

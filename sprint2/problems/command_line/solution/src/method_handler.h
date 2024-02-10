@@ -11,7 +11,7 @@ using ec = http_handler::ErrorCode;
 class MethodHandler {
    public:
     MethodHandler() = delete;
-    MethodHandler(app::App &app) : app_(app){};
+    explicit MethodHandler(app::App &app) : app_(app){};
     virtual bool GetHandler(HttpResource &&, bool) { return false; };
     virtual bool PostHandler(HttpResource &&, bool) { return false; };
     virtual bool PutHandler(HttpResource &&, bool) { return false; };

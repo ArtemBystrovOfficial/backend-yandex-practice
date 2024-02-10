@@ -13,7 +13,7 @@ namespace util {
 
 message_pack_t GetBasicResponse(const StringRequest& req) {
     StringResponse response(http::status::ok, req.version());
-    response.set(http::field::content_type, ToBSV(ContentType::TEXT_HTML));
+    response.set(http::field::content_type, util::ToSV(ContentType::TEXT_HTML));
     util::FillBody(response, "");
     response.keep_alive(req.keep_alive());
     message_pack_t resp = response;
@@ -25,13 +25,15 @@ std::string EncodeURL(std::string_view sv) {
     auto it = str.begin();
     while (true) {
         it = std::find(it + 1, str.end(), '%');
-        if (it == str.end()) break;
+        if (it == str.end()) 
+            break;
         str.replace(it, it + 3, std::string(1, char(strtol(std::string((it + 1), (it + 3)).c_str(), 0, 16))));
     }
     it = str.begin();
     while (true) {
         it = std::find(it + 1, str.end(), '+');
-        if (it == str.end()) break;
+        if (it == str.end()) 
+            break;
         *it = ' ';
     }
     return str;
@@ -45,7 +47,8 @@ Args_t SplitUrl(std::string_view url) {
     while (true) {
         size_t space = url.find('/', pos);
         auto str = space == pos_end ? url.substr(pos) : url.substr(pos, space - pos);
-        if (!str.empty()) result.push_back(std::move(str));
+        if (!str.empty()) 
+            result.push_back(std::move(str));
         if (space == pos_end)
             break;
         else
@@ -107,9 +110,11 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
     namespace sys = boost::system;
 
     std::filesystem::path path(std::string(static_folder.data(), static_folder.size()) + std::string(path_sv.data(), path_sv.size()));
-    if (!std::filesystem::exists(path)) throw ErrorCode::FILE_NOT_EXIST;
+    if (!std::filesystem::exists(path)) 
+        throw ErrorCode::FILE_NOT_EXIST;
 
-    if (!IsSubPath(path, std::filesystem::path(static_folder))) throw ErrorCode::BAD_ACCESS;
+    if (!IsSubPath(path, std::filesystem::path(static_folder))) 
+        throw ErrorCode::BAD_ACCESS;
 
     FileResponse res;
 
@@ -119,12 +124,14 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
 
     file_body::value_type file;
 
-    if (sys::error_code ec; file.open(path.c_str(), beast::file_mode::read, ec), ec) throw ErrorCode::READ_FILE;
+    if (sys::error_code ec; file.open(path.c_str(), beast::file_mode::read, ec), ec)  
+        throw ErrorCode::READ_FILE;
 
     res.body() = std::move(file);
     res.prepare_payload();
 
-    if (std::holds_alternative<FileResponse>(response)) std::get<FileResponse>(response).body().close();
+    if (std::holds_alternative<FileResponse>(response)) 
+        std::get<FileResponse>(response).body().close();
 
     response = std::move(res);
 }
@@ -132,7 +139,7 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
 std::string ExecuteAuthorized(HttpResource& res) noexcept(false) {
     std::string_view token_raw;
     try {
-        token_raw = ToSV(res.req[http::field::authorization]);
+        token_raw = util::ToSV(res.req[http::field::authorization]);
     } catch (...) {
         throw http_handler::ErrorCode::AUTHORIZATION_NOT_EXIST;
     }
@@ -140,7 +147,8 @@ std::string ExecuteAuthorized(HttpResource& res) noexcept(false) {
 }
 
 std::string_view ExtractArg(Args_t& args) {
-    if (args.empty()) return ""sv;
+    if (args.empty()) 
+        return ""sv;
     auto arg = args.front();
     args.pop_front();
     return arg;

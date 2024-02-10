@@ -25,13 +25,20 @@ void FillInfoError(StringResponse& resp, ErrorCode ec_code, std::optional<std::s
 
     if (ec_code > ErrorCode::NOT_ALLOWED) {
         std::string str;
-        if (ec_code & POST_NOT_ALLOWED) str += "POST, ";
-        if (ec_code & GET_ALLOWED) str += "GET, ";
-        if (ec_code & DELETE_ALLOWED) str += "DELETE, ";
-        if (ec_code & PUT_ALLOWED) str += "PUT, ";
-        if (ec_code & OPTIONS_ALLOWED) str += "OPTIONS, ";
-        if (ec_code & HEAD_ALLOWED) str += "HEAD, ";
-        if (ec_code & PATCH_ALLOWED) str += "PATCH, ";
+        if (ec_code & POST_NOT_ALLOWED) 
+            str += "POST, ";
+        if (ec_code & GET_ALLOWED) 
+            str += "GET, ";
+        if (ec_code & DELETE_ALLOWED) 
+            str += "DELETE, ";
+        if (ec_code & PUT_ALLOWED) 
+            str += "PUT, ";
+        if (ec_code & OPTIONS_ALLOWED) 
+            str += "OPTIONS, ";
+        if (ec_code & HEAD_ALLOWED) 
+            str += "HEAD, ";
+        if (ec_code & PATCH_ALLOWED) 
+            str += "PATCH, ";
 
         str.erase(str.end() - 2, str.end());
         allow_access = str;
@@ -120,7 +127,7 @@ void FillInfoError(StringResponse& resp, ErrorCode ec_code, std::optional<std::s
             return;
     }
 
-    resp.set(http::field::content_type, ToBSV(ContentType::JSON));
+    resp.set(http::field::content_type, util::ToSV(ContentType::JSON));
     ptree tree;
     tree.put("code", code);
     tree.put("message", message);

@@ -27,7 +27,7 @@ void Map::LoadJsonNode(const ptree& tree) {
     ProcessChildNodes(tree, lit::buildings, buildings_);
     ProcessChildNodes(tree, lit::offices, offices_);
 
-    boxes_list_.reset(new std::vector<gl::Box>(GetRectsByRoads()));
+    boxes_list_ = std::make_shared<std::vector<gl::Box>>(GetRectsByRoads());
 }
 
 ptree Map::GetJsonNode() const {
@@ -79,9 +79,10 @@ PointF Map::GetRandomCordinates() {
 
 PointF Map::GetMovePositionWithCollisions(const PointF &from, const PointF &to)
 {
-    if (!boxes_list_) throw "rtree not implemented!";
+    if (!boxes_list_) 
+        throw "rtree not implemented!";
 
-    Real kof_direction = 0.005;
+    Real inaccuracy = 0.005;
 
     // Начальная и конечная точки луча
     geometry_local::Line ray_local{{from.x, from.y}, {to.x, to.y}};
@@ -111,7 +112,8 @@ PointF Map::GetMovePositionWithCollisions(const PointF &from, const PointF &to)
     auto CheckOutBounds = [&](const PointF& point) -> bool {
         bool has_out_bound = true;
         for (const auto& bx : *boxes_list_)
-            if (bx.CheckContains(point)) has_out_bound = false;
+            if (bx.CheckContains(point)) 
+                has_out_bound = false;
 
         return has_out_bound;
     };
@@ -120,19 +122,21 @@ PointF Map::GetMovePositionWithCollisions(const PointF &from, const PointF &to)
         bool is = false;
         if (from.x != to.x) {
             if (from.x > to.x)
-                is = CheckOutBounds({point.x - kof_direction, point.y});
+                is = CheckOutBounds({point.x - inaccuracy, point.y});
             else
-                is = CheckOutBounds({point.x + kof_direction, point.y});
+                is = CheckOutBounds({point.x + inaccuracy, point.y});
         } else {
             if (from.y > to.y)
-                is = CheckOutBounds({point.x, point.y - kof_direction});
+                is = CheckOutBounds({point.x, point.y - inaccuracy});
             else
-                is = CheckOutBounds({point.x, point.y + kof_direction});
+                is = CheckOutBounds({point.x, point.y + inaccuracy});
         }
         if (is) {
-            // OutBound
-            if (from.x != to.x) return PointF{point.x, from.y};
-            if (from.y != to.y) return PointF{from.x, point.y};
+            // OutOfBound
+            if (from.x != to.x) 
+                return PointF{point.x, from.y};
+            if (from.y != to.y) 
+                return PointF{from.x, point.y};
         }
     }
 
@@ -146,35 +150,35 @@ std::vector<gl::Box> Map::GetRectsByRoads() {
         auto point_start = road.GetStart();
         auto point_end = road.GetEnd();
 
-        auto kof = Road::WidthRoad;
+        auto width_road = Road::WidthRoad;
         Real x1 = point_start.x, x2 = point_end.x, y1 = point_start.y, y2 = point_end.y;
 
         if (road.IsHorizontal()) {
             //--->
             if (point_start.x < point_end.x) {
-                x1 -= kof;
-                y1 -= kof;
-                x2 += kof;
-                y2 += kof;
+                x1 -= width_road;
+                y1 -= width_road;
+                x2 += width_road;
+                y2 += width_road;
             } else {  //<---
-                x1 += kof;
-                y1 += kof;
-                x2 -= kof;
-                y2 -= kof;
+                x1 += width_road;
+                y1 += width_road;
+                x2 -= width_road;
+                y2 -= width_road;
             }
         } else {
             // | ^
             // v |
             if (point_start.y < point_end.y) {
-                x1 -= kof;
-                y1 -= kof;
-                x2 += kof;
-                y2 += kof;
+                x1 -= width_road;
+                y1 -= width_road;
+                x2 += width_road;
+                y2 += width_road;
             } else {
-                x1 += kof;
-                y1 += kof;
-                x2 -= kof;
-                y2 -= kof;
+                x1 += width_road;
+                y1 += width_road;
+                x2 -= width_road;
+                y2 -= width_road;
             }
         }
 
@@ -210,7 +214,7 @@ void Game::LoadJsonNode(const ptree& tree) {
     } catch (...) {
         dog_speed_default_ = 1.0f;
     }
-    for (const auto& [_, map] : tree.get_child(lit::maps)) AddMap({map});
+    for (const auto& [_, map] : tree.get_child(lit::maps)) AddMap(Map(map));
 }
 
 ptree Game::GetJsonNode() const {
@@ -229,7 +233,8 @@ std::string Game::GetJsonMaps() const {
     for (const auto& map : maps_) {
         s += "{"s + "\""s + lit::id + "\": \""s + *map->GetId() + "\", \""s + lit::name + "\": \""s + map->GetName() + "\""s + "},"s;
     }
-    if (!maps_.empty()) s.pop_back();  // last ,
+    if (!maps_.empty()) 
+        s.pop_back();  // last ,
     s += "]";
     return s;
 }
@@ -371,13 +376,18 @@ bool Dog::MoveDog(Direction direction) {
 void Dog::StopDog() { speed_ = {0.0f, 0.0f}; }
 
 void Dog::Tick(const std::chrono::milliseconds& ms) {
-    if (!speed_.x && !speed_.y) return;
-    Real new_x = position_.x + (speed_.x * ms.count() / 1000.0f), new_y = position_.y + (speed_.y * ms.count() / 1000.0f);
+    if (!speed_.x && !speed_.y) 
+        return;
+    static constexpr float millisecond_in_second = 1000.0f;
+
+    Real new_x = position_.x + (speed_.x * ms.count() / millisecond_in_second), 
+         new_y = position_.y + (speed_.y * ms.count() / millisecond_in_second);
 
     PointF position_target{new_x, new_y};
 
     auto position = current_map_->GetMovePositionWithCollisions(position_, {new_x, new_y});
-    if (position != position_target) StopDog();
+    if (position != position_target) 
+        StopDog();
     position_ = position;
 }
 

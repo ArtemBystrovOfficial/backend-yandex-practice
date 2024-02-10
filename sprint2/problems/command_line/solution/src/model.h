@@ -57,7 +57,7 @@ class Road : public json_loader::JsonObject {
     constexpr static HorizontalTag HORIZONTAL{};
     constexpr static VerticalTag VERTICAL{};
 
-    Road(const ptree& tree) { LoadJsonNode(tree); }
+    explicit Road(const ptree& tree) { LoadJsonNode(tree); }
 
     Road(HorizontalTag, Point start, Coord end_x) noexcept : start_{start}, end_{end_x, start.y} {}
 
@@ -80,7 +80,7 @@ class Building : public json_loader::JsonObject {
    public:
     explicit Building(Rectangle bounds) noexcept : bounds_{bounds} {}
 
-    Building(const ptree& tree) { LoadJsonNode(tree); }
+    explicit Building(const ptree& tree) { LoadJsonNode(tree); }
 
     void LoadJsonNode(const ptree& tree) override;
     ptree GetJsonNode() const override;
@@ -97,7 +97,7 @@ class Office : public json_loader::JsonObject {
 
     Office(Id id, Point position, Offset offset) noexcept : id_{std::move(id)}, position_{position}, offset_{offset} {}
 
-    Office(const ptree& tree) : id_("") { LoadJsonNode(tree); }
+    explicit Office(const ptree& tree) : id_("") { LoadJsonNode(tree); }
 
     const Id& GetId() const noexcept { return id_; }
 
@@ -122,7 +122,7 @@ class Map : public json_loader::JsonObject {
 
     Map(Id id, std::string name) noexcept : id_(std::move(id)), name_(std::move(name)) {}
 
-    Map(const ptree& tree) : id_("") { LoadJsonNode(tree); }
+    explicit Map(const ptree& tree) : id_("") { LoadJsonNode(tree); }
 
     const Id& GetId() const noexcept { return id_; }
     const std::string& GetName() const noexcept { return name_; }
@@ -165,6 +165,8 @@ class Map : public json_loader::JsonObject {
 class Dog : public TimeObject {
    public:
     using Id = util::Tagged<size_t, Dog>;
+
+    Dog() = delete;
 
     Dog(Id id, std::string_view name, PointF position, Real map_speed, std::shared_ptr<Map> current_map)
         : id_(id),
@@ -237,7 +239,7 @@ class Game : public json_loader::JsonObject {
     using GameSessions = std::vector<std::shared_ptr<GameSession>>;
 
     Game() = default;
-    Game(const std::filesystem::path& path) : is_game_randomize_start_cordinate_(false) { LoadJsonFromFile(path); }
+    explicit Game(const std::filesystem::path& path) : is_game_randomize_start_cordinate_(false) { LoadJsonFromFile(path); }
 
     void AddMap(Map map);
 
