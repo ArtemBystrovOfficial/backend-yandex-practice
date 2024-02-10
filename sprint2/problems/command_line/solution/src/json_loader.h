@@ -13,7 +13,7 @@ namespace json_loader {
 template <typename T>
 void ProcessChildNodes(const ptree& tree, const std::string& child_name, std::vector<T>& container) {
     for (const auto& [_, node] : tree.get_child(child_name)) {
-        container.push_back({node});
+        container.push_back(T(node));
     }
 }
 
