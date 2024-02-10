@@ -13,7 +13,7 @@ namespace util {
 
 message_pack_t GetBasicResponse(const StringRequest& req) {
     StringResponse response(http::status::ok, req.version());
-    response.set(http::field::content_type, util::ToSV(ContentType::TEXT_HTML));
+    response.set(http::field::content_type, util::ToBSV(ContentType::TEXT_HTML));
     util::FillBody(response, "");
     response.keep_alive(req.keep_alive());
     message_pack_t resp = response;

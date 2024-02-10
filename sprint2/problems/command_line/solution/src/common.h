@@ -10,10 +10,10 @@
 //// Базовые функции работы с HTTP
 ////////////////////////////////////
 
+namespace util {
+
 inline std::string_view ToSV(boost::beast::string_view bsv) { return std::string_view(bsv.data(), bsv.size()); }
 inline boost::beast::string_view ToBSV(std::string_view bsv) { return boost::beast::string_view(bsv.data(), bsv.size()); }
-
-namespace util {
 
 namespace fs = std::filesystem;
 

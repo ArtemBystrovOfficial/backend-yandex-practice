@@ -163,7 +163,7 @@ void Game::Tick(HttpResource&& res) {
 //////// MAPS ///////////
 
 bool Maps::GetHandler(HttpResource&& res, bool is_ping) {
-    res.resp.set(http::field::content_type, util::ToSV(ContentType::JSON));
+    res.resp.set(http::field::content_type, util::ToBSV(ContentType::JSON));
 
     if (res.args.empty()) {
         CALL_WITH_PING(is_ping, util::FillBody(res.resp, GetMapListJson()))

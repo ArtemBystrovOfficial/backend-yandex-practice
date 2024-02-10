@@ -34,13 +34,17 @@ bool Line::isPointOnSegment(const PointF p, const PointF start, const PointF end
     return isBetween(start.x, p.x, end.x) && isBetween(start.y, p.y, end.y);
 }
 bool Box::CheckContains(const PointF& point) const {
-    Real kof_inac = 0.001;
-    return point.x >= left_down.x - kof_inac && point.x <= right_up.x + kof_inac && point.y >= left_down.y - kof_inac  && point.y <= right_up.y + kof_inac;
+    Real inaccuracy = 0.001;
+    return point.x >= left_down.x - inaccuracy &&
+           point.x <= right_up.x + inaccuracy &&
+           point.y >= left_down.y - inaccuracy &&
+           point.y <= right_up.y + inaccuracy;
 }
 void Box::FillIntersects(ListPoints& list, const Line& line) const {
     PointF right_down = {right_up.x, left_down.y}, left_up = {left_down.x, right_up.y};
 
-    std::vector<Line> sides = {{right_down, right_up}, {right_down, left_down}, {left_down, left_up}, {left_up, right_up}};
+    std::vector<Line> sides = {{right_down, right_up}, {right_down, left_down},
+                                 {left_down, left_up}, {left_up, right_up}};
 
     for (auto& side : sides) {
         auto point = line.GetIntersect(side);

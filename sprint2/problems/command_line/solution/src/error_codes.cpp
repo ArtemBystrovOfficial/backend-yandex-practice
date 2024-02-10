@@ -127,7 +127,7 @@ void FillInfoError(StringResponse& resp, ErrorCode ec_code, std::optional<std::s
             return;
     }
 
-    resp.set(http::field::content_type, util::ToSV(ContentType::JSON));
+    resp.set(http::field::content_type, util::ToBSV(ContentType::JSON));
     ptree tree;
     tree.put("code", code);
     tree.put("message", message);

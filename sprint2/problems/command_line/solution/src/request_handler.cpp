@@ -15,7 +15,7 @@ RequestHandler::RequestHandler(strand_t & api_strand, api::ApiProxyKeeper& keepe
 void RequestHandler::PreSettings(StringRequest& req) {
     req.target(util::EncodeURL(util::ToSV(req.target())));
     if (req.target() == "/") 
-        req.target(util::ToSV(ContentType::INDEX_HTML));
+        req.target(util::ToBSV(ContentType::INDEX_HTML));
 }
 
 std::shared_ptr<BasicRedirection> RequestHandler::ExtractRequestRedirection(Args_t &args) {
