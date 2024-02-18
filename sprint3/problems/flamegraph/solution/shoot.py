@@ -25,7 +25,7 @@ def start_server():
     return parser.parse_args().server
 
 def start_prof(server):	
-    return run('perf record -g -o /perf.data ' + server)
+    return run('perf record -g -o perf.data ' + server)
 
 def run(command, output=None):
     process = subprocess.Popen(shlex.split(command), stdout=output)
@@ -41,8 +41,8 @@ def stop(process, wait=False):
     process.terminate()
 
 def make_flame():
-    test = subprocess.Popen(shlex.split('ls -l /'), stdout=None)
-    process = subprocess.Popen(shlex.split('perf script -i /perf.data'), stdout=subprocess.PIPE, stderr=None)
+    test = subprocess.Popen(shlex.split('ls -l .'), stdout=None)
+    process = subprocess.Popen(shlex.split('perf script -i perf.data'), stdout=subprocess.PIPE, stderr=None)
     output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE, stderr=None)
     with open('graph.svg', 'w') as f:
     	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f, stderr=None)
