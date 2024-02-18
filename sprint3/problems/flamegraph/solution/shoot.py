@@ -41,8 +41,10 @@ def stop(process, wait=False):
     process.terminate()
 
 def make_flame():
-    command = "perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg"
-    runShell(command)
+    process = subprocess.Popen(shlex.split('perf script -i perf.data'), stdout=subprocess.PIPE)
+    output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE)
+    with open('graph.svg', 'w') as f:
+    	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f)
 
 def shoot(ammo):
     hit = run('curl ' + ammo, output=subprocess.DEVNULL)
