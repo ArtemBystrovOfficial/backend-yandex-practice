@@ -60,6 +60,7 @@ def make_shots():
 server = start_prof(start_server())
 time.sleep(1)
 make_shots()
+time.sleep(1)
 stop(server)
 time.sleep(1)
 make_flame()
