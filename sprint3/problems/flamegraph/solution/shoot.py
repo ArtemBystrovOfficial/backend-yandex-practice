@@ -28,11 +28,11 @@ def start_prof(server):
     return run('perf record -g -o perf.data ' + server)
 
 def run(command, output=None):
-    process = subprocess.Popen(shlex.split(command), stdout=output)
+    process = subprocess.Popen(shlex.split(command), stdout=output, stderr=subprocess.DEVNULL)
     return process
     
 def runShell(command, output=None):
-    process = subprocess.Popen(command,shell=True, stdout=output)
+    process = subprocess.Popen(command,shell=True, stdout=output, stderr=subprocess.DEVNULL)
     return process
 
 def stop(process, wait=False):
@@ -41,13 +41,11 @@ def stop(process, wait=False):
     process.terminate()
 
 def make_flame():
-    test = subprocess.Popen(shlex.split('ls -l .'), stdout=None)
-    process = subprocess.Popen(shlex.split('perf script -i perf.data'), stdout=subprocess.PIPE, stderr=None)
-    output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE, stderr=None)
+    process = subprocess.Popen(shlex.split('perf script -i perf.data'), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     with open('graph.svg', 'w') as f:
-    	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f, stderr=None)
+    	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f, stderr=subprocess.DEVNULL)
     	output2.wait()
-    test = subprocess.Popen(shlex.split('ls -l .'), stdout=None)	
 
 def shoot(ammo):
     hit = run('curl ' + ammo, output=subprocess.DEVNULL)
