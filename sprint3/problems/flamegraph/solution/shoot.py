@@ -41,10 +41,11 @@ def stop(process, wait=False):
     process.terminate()
 
 def make_flame():
-    process = subprocess.Popen(shlex.split('perf script -i /perf.data'), stdout=subprocess.PIPE)
-    output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE)
+    test = subprocess.Popen(shlex.split('ls -l /'), stdout=None)
+    process = subprocess.Popen(shlex.split('perf script -i /perf.data'), stdout=subprocess.PIPE, stderr=None)
+    output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE, stderr=None)
     with open('graph.svg', 'w') as f:
-    	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f)
+    	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f, stderr=None)
 
 def shoot(ammo):
     hit = run('curl ' + ammo, output=subprocess.DEVNULL)
