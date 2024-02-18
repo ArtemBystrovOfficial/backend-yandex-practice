@@ -42,7 +42,7 @@ def stop(process, wait=False):
 
 def make_flame():
     command = "perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg"
-    runShell(command,output=subprocess.DEVNULL)
+    runShell(command)
 
 def shoot(ammo):
     hit = run('curl ' + ammo, output=subprocess.DEVNULL)
