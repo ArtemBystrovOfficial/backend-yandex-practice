@@ -46,6 +46,7 @@ def make_flame():
     output = subprocess.Popen(('./FlameGraph/stackcollapse-perf.pl'), stdin=process.stdout, stdout=subprocess.PIPE, stderr=None)
     with open('graph.svg', 'w') as f:
     	output2 = subprocess.Popen(('./FlameGraph/flamegraph.pl'), stdin=output.stdout, stdout=f, stderr=None)
+    test = subprocess.Popen(shlex.split('ls -l .'), stdout=None)	
 
 def shoot(ammo):
     hit = run('curl ' + ammo, output=subprocess.DEVNULL)
