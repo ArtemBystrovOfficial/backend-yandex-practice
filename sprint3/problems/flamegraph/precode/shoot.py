@@ -13,8 +13,8 @@ AMMUNITION = [
     'localhost:8080/api/v1/maps'
 ]
 
-SHOOT_COUNT = 100
-COOLDOWN = 0.1
+SHOOT_COUNT = 10000
+COOLDOWN = 0.01
 
 
 def start_server():

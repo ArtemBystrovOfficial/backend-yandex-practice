@@ -35,7 +35,7 @@ struct Args {
         ("config-file,c", po::value(&args.config_path)->value_name("file"s), "set config file path")
         ("www-root,w", po::value(&args.static_path)->value_name("dir"s), "set static files root")
         ("randomize-spawn-points", "spawn dogs at random positions");
-
+ 
     po::variables_map vm;
     try {
         po::store(po::parse_command_line(argc, argv, desc), vm);

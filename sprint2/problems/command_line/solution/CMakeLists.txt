@@ -10,7 +10,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 file(GLOB SOURCES "src/*.cpp" "src/*.h")
-
+ 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE CONAN_PKG::boost)
