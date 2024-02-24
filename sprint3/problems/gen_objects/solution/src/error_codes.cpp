@@ -20,6 +20,7 @@ ErrorCode& operator|=(ErrorCode& lhs, const ErrorCode& rhs) {
 void FillInfoError(StringResponse& resp, ErrorCode ec_code, std::optional<std::string_view> custom_body) {
     std::string_view code = "";
     std::string_view message = "";
+    resp.set(http::field::cache_control, "no-cache");
 
     std::optional<std::string> allow_access;
 
