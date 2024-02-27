@@ -77,10 +77,11 @@ void TestSorted(const collision_detector::events_t & events) {
 void TestDataEq(const collision_detector::events_t & events, const collision_detector::events_t & answer) {
     using namespace collision_detector;
     REQUIRE( events.size() == answer.size() );
-    std::equal(begin(events),end(events),begin(answer),[](const GatheringEvent & event1, const GatheringEvent & event2){
-        CHECK(event1.gatherer_id == event2.gatherer_id);
-        CHECK(event1.item_id == event2.item_id);
-        CHECK_THAT(event1.sq_distance, WithinAbs(event2.sq_distance,1e-10));
+    std::equal(begin(events),end(events),begin(answer),[](const GatheringEvent & event_result, const GatheringEvent & event_answer){
+        CHECK(event_result.gatherer_id == event_answer.gatherer_id);
+        CHECK(event_result.item_id == event_answer.item_id);
+        CHECK_THAT(event_result.sq_distance, WithinAbs(event_answer.sq_distance,1e-10));
+        CHECK_THAT(event_result.time, WithinAbs(event_answer.time,1e-10));
         return true;
     });
 }
@@ -90,7 +91,7 @@ void TestEvents(const collision_detector::events_t & events, const collision_det
     TestDataEq(events, answer);
 }
 
-TEST_CASE("Collision detector 1i 1g") {
+TEST_CASE("Collision detector 1/1i 1g") {
     using namespace collision_detector;
     auto provider = TestGathererProvider(
                                          {
@@ -101,7 +102,7 @@ TEST_CASE("Collision detector 1i 1g") {
                                          }
                                         );
     auto answer = events_t ({
-        { 0 , 0 , pow(0.1 + 0.2, 2), 0}
+        { 0, 0, 0, 0.5}
     });
 
     auto events = FindGatherEvents(provider);
@@ -112,12 +113,10 @@ TEST_CASE("Collision detector 1i 1g") {
 void ExecuteSquareTest(double R, double r, double gather_x_distance) {
     using namespace collision_detector;
     auto CalculateItems = [](double R, double r, double gath_x_distanse) {
-        REQUIRE((R+r*2)<gath_x_distanse*sqrt(2));
         TestGathererProvider::items_list_t items;
-        double delta = R*r*sqrt(2);
-        double inaccuracy = 1e-3;
-        items.push_back(Item{{delta,-inaccuracy},r});
-        items.push_back(Item{{-1+delta,-1+inaccuracy},r});
+        double inaccuracy = 1e-12;
+        items.push_back(Item{{gath_x_distanse/3.,R+r-inaccuracy},r});
+        items.push_back(Item{{gath_x_distanse*2./3.,-R-r+inaccuracy},r});
         return items;
     };
 
@@ -126,12 +125,12 @@ void ExecuteSquareTest(double R, double r, double gather_x_distance) {
                                            CalculateItems(R,r,gather_x_distance)
                                          },
                                          {
-                                           { {0,0}, {-gather_x_distance, -gather_x_distance}, R }
+                                           { {0,0}, {gather_x_distance, 0}, R }
                                          }
                                         );
     auto answer = events_t ({
-        {0 ,0 ,pow(R + r, 2), 0},
-        {1 ,0 ,pow(R + r, 2), 0},
+        {0 ,0 ,pow(R+r,2), 1./3.},
+        {1 ,0 ,pow(R+r,2), 2./3.},
     });
 
     
@@ -139,27 +138,50 @@ void ExecuteSquareTest(double R, double r, double gather_x_distance) {
     TestEvents(events, answer);
 }
 
-TEST_CASE("Collision detector 2i 1g") {
-    ExecuteSquareTest(0.3,0.1,1);
-    ExecuteSquareTest(15,14,100);
-    ExecuteSquareTest(200,100,10000);
+TEST_CASE("Collision detector 2/2i 1g") {
+    SECTION("Test with small coords") {
+        ExecuteSquareTest(0.3,0.1,1);
+    }
+    SECTION("Test with medium coords") {
+        ExecuteSquareTest(15,14,100);
+    }
+    SECTION("Test with long coords") {
+        ExecuteSquareTest(200,100,10000);
+    }
 }
 
-TEST_CASE("Collision detector 1i 2g") {
+TEST_CASE("Collision detector 1/1i 2g") {
     using namespace collision_detector;
     auto provider = TestGathererProvider(
                                          {
-                                           { {2./3.,1./3.}, 1e-5 }
+                                           { {1+1e-5,-2}, 1e-4 }
                                          },
                                          {
-                                           { {0,0}, {2,1}, 1e-5 },
-                                           { {2,0}, {1,1}, 1e-5 }
+                                           { {1,2}, {1,-3}, 1e-4 },
+                                           { {1,-3}, {1,2}, 1e-4 }
                                          }
                                         );
     auto answer = events_t ({
-        {0 ,1 ,pow(1e-5 + 1e-5, 2), 0},
-        {0 ,0 ,pow(1e-5 + 1e-5, 2), 0}
+        {0 ,1 ,1e-10, 1./5.},
+        {0 ,0 ,1e-10, 4./5.}
     });
+
+    auto events = FindGatherEvents(provider);
+
+    TestEvents(events, answer);
+}
+
+TEST_CASE("Collision detector 0/1i 1g") {
+    using namespace collision_detector;
+    auto provider = TestGathererProvider(
+                                         {
+                                           { {0, 0.5}, 0.1 }
+                                         },
+                                         {
+                                           { {2,0}, {1,0}, 0.2 }
+                                         }
+                                        );
+    auto answer = events_t ({});
 
     auto events = FindGatherEvents(provider);
 
