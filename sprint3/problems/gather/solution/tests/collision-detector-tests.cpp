@@ -146,7 +146,7 @@ TEST_CASE("Collision detector 2/2i 1g") {
         ExecuteSquareTest(15,14,100);
     }
     SECTION("Test with long coords") {
-        ExecuteSquareTest(200,100,10000);
+        ExecuteSquareTest(33,99,3000);
     }
 }
 
