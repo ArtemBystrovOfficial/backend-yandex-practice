@@ -63,6 +63,15 @@ double GetRange(const Gatherer & gatherer, const geom::Point2D & point1, const g
 
 bool IsItemInherits(const Gatherer & gatherer, const Item & item) {
     auto center_point = GetProjectionOnGatherer(gatherer, item.position);
+
+    double min_x = std::min(gatherer.start_pos.x, gatherer.end_pos.x);
+    double max_x = std::max(gatherer.start_pos.x, gatherer.end_pos.x);
+    double min_y = std::min(gatherer.start_pos.y, gatherer.end_pos.y);
+    double max_y = std::max(gatherer.start_pos.y, gatherer.end_pos.y);
+
+    if(!(min_x <= center_point.x && center_point.x <= max_x && min_y <= center_point.y && center_point.y <= max_y))
+        return false;
+
     return CheckRectInherits(center_point, geom::Rect{{item.position.x-item.width,item.position.y-item.width},
                                                       {item.position.x+item.width,item.position.y+item.width}});
 }
@@ -104,7 +113,11 @@ std::vector<GatheringEvent> FindGatherEvents( const ItemGathererProvider& provid
     std::vector<GatheringEvent> events;
     for(uint32_t i=0;i < provider.GatherersCount();i++) {
         for(uint32_t j=0;j < provider.ItemsCount();j++) {
-            auto [range, time] = GetRangeAndTime(provider.GetGatherer(i), provider.GetItem(j));
+            auto gatherer = provider.GetGatherer(i);
+            auto item = provider.GetItem(j);
+            if((gatherer.start_pos.x == gatherer.end_pos.x && gatherer.start_pos.y == gatherer.end_pos.y) || !gatherer.width || !item.width)
+                continue;
+            auto [range, time] = GetRangeAndTime(gatherer, item);
             if(range < 0 || time < 0)
                 continue;
             events.push_back(GatheringEvent{j,i,pow(range,2),time});

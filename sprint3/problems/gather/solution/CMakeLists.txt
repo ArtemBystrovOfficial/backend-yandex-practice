@@ -18,6 +18,7 @@ target_link_libraries(collision_detection_lib PUBLIC CONAN_PKG::boost Threads::T
 
 add_executable(collision_detection_tests
 	tests/collision-detector-tests.cpp
+	tests/system-collision-detector-tests.cpp
 )
 
 target_link_libraries(collision_detection_tests CONAN_PKG::catch2 collision_detection_lib)
