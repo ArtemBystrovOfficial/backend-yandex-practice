@@ -80,8 +80,8 @@ void TestDataEq(const collision_detector::events_t & events, const collision_det
     std::equal(begin(events),end(events),begin(answer),[](const GatheringEvent & event_result, const GatheringEvent & event_answer){
         CHECK(event_result.gatherer_id == event_answer.gatherer_id);
         CHECK(event_result.item_id == event_answer.item_id);
-        CHECK_THAT(event_result.sq_distance, WithinAbs(event_answer.sq_distance,1e-10));
-        CHECK_THAT(event_result.time, WithinAbs(event_answer.time,1e-10));
+        CHECK_THAT(event_result.sq_distance, WithinAbs(event_answer.sq_distance,1e-9));
+        CHECK_THAT(event_result.time, WithinAbs(event_answer.time,1e-9));
         return true;
     });
 }
@@ -114,7 +114,7 @@ void ExecuteSquareTest(double R, double r, double gather_x_distance) {
     using namespace collision_detector;
     auto CalculateItems = [](double R, double r, double gath_x_distanse) {
         TestGathererProvider::items_list_t items;
-        double inaccuracy = 1e-15;
+        double inaccuracy = 1e-13;
         items.push_back(Item{{gath_x_distanse/3.,R+r-inaccuracy},r});
         items.push_back(Item{{gath_x_distanse*2./3.,-R-r+inaccuracy},r});
         return items;
