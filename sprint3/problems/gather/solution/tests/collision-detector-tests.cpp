@@ -114,7 +114,7 @@ void ExecuteSquareTest(double R, double r, double gather_x_distance) {
     using namespace collision_detector;
     auto CalculateItems = [](double R, double r, double gath_x_distanse) {
         TestGathererProvider::items_list_t items;
-        double inaccuracy = 1e-13;
+        double inaccuracy = 1e-15;
         items.push_back(Item{{gath_x_distanse/3.,R+r-inaccuracy},r});
         items.push_back(Item{{gath_x_distanse*2./3.,-R-r+inaccuracy},r});
         return items;
