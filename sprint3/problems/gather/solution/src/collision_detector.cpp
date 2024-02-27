@@ -120,7 +120,7 @@ std::vector<GatheringEvent> FindGatherEvents( const ItemGathererProvider& provid
             auto [range, time] = GetRangeAndTime(gatherer, item);
             if(range < 0 || time < 0)
                 continue;
-            events.push_back(GatheringEvent{j,i,pow(range,2),time});
+            events.push_back(GatheringEvent{j,i,range*range,time});
         }
     }
     std::sort(events.begin(),events.end(),[](const GatheringEvent & event1,const GatheringEvent & event2){
