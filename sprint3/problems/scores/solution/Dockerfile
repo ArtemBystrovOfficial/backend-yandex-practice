@@ -38,4 +38,4 @@ COPY --from=build /app/build/bin/game_server /app/
 COPY ./data /app/data
 COPY ./static /app/static
 
-ENTRYPOINT ["/app/game_server", "-c", "/app/data/config.json" , "-w", "/app/static"] 
+ENTRYPOINT ["/app/game_server", "-c", "/app/data/config.json" , "-w", "/app/static", "-t", "50"] 

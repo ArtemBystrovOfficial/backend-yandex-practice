@@ -22,7 +22,7 @@ class Players {
     std::shared_ptr<Player> FindByToken(const util::Token&) const;
 
     void MovePlayer(const util::Token&, std::string_view direction) const noexcept(false);
-
+ 
    private:
     std::shared_ptr<Player> GetPlayerWithCheck(const util::Token&) const noexcept(false);
 

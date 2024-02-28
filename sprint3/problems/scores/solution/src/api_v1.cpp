@@ -242,7 +242,6 @@ void Game::GetState(HttpResource&& res) const {
     }
     main_json.add_child("players", list_dogs_json);
 
-    int id = 0;
     ptree objects_list_json;
     for (const auto& loot_object : loot_objects) {
         ptree obj_json;
@@ -253,7 +252,7 @@ void Game::GetState(HttpResource&& res) const {
 
         obj_json.put("type", loot_object->GetType());
         obj_json.add_child("pos", pos_pt);
-        objects_list_json.add_child(std::to_string(id++) + "S"s, obj_json);
+        objects_list_json.add_child(std::to_string(loot_object->GetId()) + "S"s, obj_json);
     }
     main_json.add_child("lostObjects", objects_list_json);
 

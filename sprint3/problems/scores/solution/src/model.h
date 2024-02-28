@@ -240,13 +240,15 @@ class Dog : public TimeObject {
 
 class LootObject {
 public:
-    LootObject(std::shared_ptr<Map> current_map)
-        : current_map_(current_map) {
+    LootObject(std::shared_ptr<Map> current_map, int id)
+        : current_map_(current_map)
+        , id_(id) {
         position_ = current_map_->GetRandomCordinates();
         type_ = rand() % current_map_->GetSizeObjectLoots();
     }
 
     int GetType() const { return type_; }
+    int GetId() const { return id_; }
     const PointF& GetPosition() const { return position_; }
 
    private:
@@ -254,6 +256,7 @@ public:
     std::shared_ptr<Map> current_map_;
     PointF position_;
     int type_;
+    int id_;
 };
 
 class GameSession : public TimeObject {
@@ -298,6 +301,8 @@ class GameSession : public TimeObject {
     std::shared_ptr<loot_gen::LootGenerator> loot_generator_;
     TimeManager& time_manager_;
 
+    int last_id_object_;
+
     bool is_game_randomize_start_cordinate_;
 };
 
@@ -315,11 +320,11 @@ class CollisionManager : public collision_detector::ItemGathererProvider {
         for(const auto & dog : session.GetDogs()) {
             //Гарантировано что собаки уже отработали свой путь и переместились, благодаря приоретету
             gatherers_.push_back({dog->GetPositionBefore(),dog->GetPosition(),k_dog_width});
-            offset++;
         }
 
         for(const auto & office : session.GetMap()->GetOffices()) {
             items_.push_back({{double(office.GetPosition().x),double(office.GetPosition().y)},k_office_width});
+            offset++;
         }
         offset_ = offset;
         for(const auto & loot_object : session.GetLootObjects()) {

@@ -411,7 +411,7 @@ void GameSession::Tick(const std::chrono::milliseconds& ms) {
     //Генерация нового лута
     auto count_to_generate = loot_generator_->Generate(ms,loot_objects_.size(),dogs_.size());
     for(int i=0;i<count_to_generate;i++) 
-        loot_objects_.push_back(std::make_shared<LootObject>(map_));
+        loot_objects_.push_back(std::make_shared<LootObject>(map_,last_id_object_++));
     
     //Сбор лута и складирование на базу
     CollisionManager manager(*this);
@@ -419,7 +419,7 @@ void GameSession::Tick(const std::chrono::milliseconds& ms) {
 
     int offset_loots = manager.GetOffsetLoots();
     for(const auto & event : events) {
-
+BOOST_LOG_TRIVIAL(debug) << "Offset loots " << offset_loots; 
         if(event.item_id < offset_loots){ //Offices
             PutLootsToOffice(event.gatherer_id);
         } else { //Loots
@@ -433,24 +433,22 @@ bool GameSession::TakeLoot(int id_dog, int id_loot) {
     if(id_loot >= loot_objects_.size() || id_dog >= dogs_.size())
         throw std::invalid_argument("id_dog or id_loot not valid"); 
 
-    static int unique_id_loot = 0;
-
     auto & bag = dogs_[id_dog]->GetMutableBag();
 
     if(bag.items.size() >= bag.max_count) {
         return false;
     }
 
-    bag.items.push_back({unique_id_loot++, loot_objects_[id_loot]->GetType()});
+    bag.items.push_back({loot_objects_[id_loot]->GetId(), loot_objects_[id_loot]->GetType()});
     loot_objects_.erase(loot_objects_.begin()+id_loot);
 
     return true;
 }
-
+ 
 void GameSession::PutLootsToOffice(int id_dog) {
     if(id_dog >= dogs_.size())
         throw std::invalid_argument("id_dog ");
-
+BOOST_LOG_TRIVIAL(debug) << "TakeLoot Begin" << id_dog << loot_objects_.size()<<dogs_.size(); 
     auto & bag = dogs_[id_dog]->GetMutableBag();
     int score = 0; 
 
@@ -459,6 +457,7 @@ void GameSession::PutLootsToOffice(int id_dog) {
     }
     bag.items.clear();
     dogs_[id_dog]->AddScorePoints(score);
+BOOST_LOG_TRIVIAL(debug) << "TakeLoot End" << id_dog << loot_objects_.size()<<dogs_.size(); 
 }
 
 void Dog::SetId(const Id& id) { id_ = id; }
