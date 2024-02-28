@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "error_codes.h"
+#include "logger.h"
 
 namespace model {
 using namespace std::literals;
@@ -93,7 +94,7 @@ PointF Map::GetRandomCordinates() {
     auto road = roads_[rand() % roads_.size()]; //random road
     auto start = road.GetStart();
     auto end = road.GetEnd();
-    return PointF(start.x + rand() % (abs(start.x - end.x) + 1), start.y + rand() % (abs(start.y - end.y) + 1));
+    return PointF(std::min(start.x,end.x) + rand() % (abs(start.x - end.x) + 1), std::min(start.y,end.y) + rand() % (abs(start.y - end.y) + 1));
 }
 
 PointF Map::GetMovePositionWithCollisions(const PointF &from, const PointF &to)
@@ -237,7 +238,7 @@ void Game::LoadJsonNode(const ptree& tree) {
     try {
         default_bag_capacity_ = tree.get<int>(lit::default_bag_capacity);
     } catch (...) {
-        default_bag_capacity_ = 3.0f;
+        default_bag_capacity_ = 3;
     }
 
     auto gen_conf = tree.get_child(lit::lootGeneratorConfig);
@@ -418,6 +419,7 @@ void GameSession::Tick(const std::chrono::milliseconds& ms) {
 
     int offset_loots = manager.GetOffsetLoots();
     for(const auto & event : events) {
+
         if(event.item_id < offset_loots){ //Offices
             PutLootsToOffice(event.gatherer_id);
         } else { //Loots
@@ -431,14 +433,17 @@ bool GameSession::TakeLoot(int id_dog, int id_loot) {
     if(id_loot >= loot_objects_.size() || id_dog >= dogs_.size())
         throw std::invalid_argument("id_dog or id_loot not valid"); 
 
+    static int unique_id_loot = 0;
+
     auto & bag = dogs_[id_dog]->GetMutableBag();
 
     if(bag.items.size() >= bag.max_count) {
         return false;
     }
 
-    bag.items.push_back({id_loot, loot_objects_[id_loot]->GetType()});
+    bag.items.push_back({unique_id_loot++, loot_objects_[id_loot]->GetType()});
     loot_objects_.erase(loot_objects_.begin()+id_loot);
+
     return true;
 }
 

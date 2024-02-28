@@ -8,9 +8,14 @@ std::string _removeAllQuotesFromNumbers(const std::string& str) {
     std::regex numberRegex("\"(-?\\d*\\.?\\d+)\"");  // Все числа будут без кавычек, если хотим число как строку добавляем в конце S
     std::regex regex_pattern("\"(-?\\d+)f\"");
     std::regex numberSRegex("\"(\\d*\\.?\\d+)S\"");
+    std::regex pattern("\\[\"\"\\]");
+
+    // Заменяем все вхождения регулярного выражения
     jsonString = std::regex_replace(str, numberRegex, "$1");
     jsonString = std::regex_replace(jsonString, regex_pattern, "$1.0");
     jsonString = std::regex_replace(jsonString, numberSRegex, "\"$1\"");
+    jsonString = std::regex_replace(jsonString, pattern, "[]");
+
     return jsonString;
 }
 std::string JsonObject::GetJson() const {

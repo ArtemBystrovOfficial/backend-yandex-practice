@@ -229,7 +229,9 @@ void Game::GetState(HttpResource&& res) const {
             bag_node.put("type", loot);
             bag.push_back({"",bag_node});
         }
-
+        if (bag.empty()) 
+            bag.push_back(std::make_pair("", boost::property_tree::ptree()));
+            
         dog_json.add_child("pos", pos_pt);
         dog_json.add_child("speed", speed_pt);
         dog_json.put("dir", dog->GetDirectionChar());

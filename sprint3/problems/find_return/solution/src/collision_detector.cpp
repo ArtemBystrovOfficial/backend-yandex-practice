@@ -115,7 +115,7 @@ std::vector<GatheringEvent> FindGatherEvents( const ItemGathererProvider& provid
         for(uint32_t j=0;j < provider.ItemsCount();j++) {
             auto gatherer = provider.GetGatherer(i);
             auto item = provider.GetItem(j);
-            if((gatherer.start_pos.x == gatherer.end_pos.x && gatherer.start_pos.y == gatherer.end_pos.y) || !gatherer.width || !item.width)
+            if((gatherer.start_pos.x == gatherer.end_pos.x && gatherer.start_pos.y == gatherer.end_pos.y))
                 continue;
             auto [range, time] = GetRangeAndTime(gatherer, item);
             if(range < 0 || time < 0)
