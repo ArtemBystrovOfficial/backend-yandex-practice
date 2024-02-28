@@ -419,7 +419,7 @@ void GameSession::Tick(const std::chrono::milliseconds& ms) {
 
     int offset_loots = manager.GetOffsetLoots();
     for(const auto & event : events) {
-BOOST_LOG_TRIVIAL(debug) << "Offset loots " << offset_loots; 
+        
         if(event.item_id < offset_loots){ //Offices
             PutLootsToOffice(event.gatherer_id);
         } else { //Loots
@@ -448,7 +448,6 @@ bool GameSession::TakeLoot(int id_dog, int id_loot) {
 void GameSession::PutLootsToOffice(int id_dog) {
     if(id_dog >= dogs_.size())
         throw std::invalid_argument("id_dog ");
-BOOST_LOG_TRIVIAL(debug) << "TakeLoot Begin" << id_dog << loot_objects_.size()<<dogs_.size(); 
     auto & bag = dogs_[id_dog]->GetMutableBag();
     int score = 0; 
 
@@ -457,7 +456,6 @@ BOOST_LOG_TRIVIAL(debug) << "TakeLoot Begin" << id_dog << loot_objects_.size()<<
     }
     bag.items.clear();
     dogs_[id_dog]->AddScorePoints(score);
-BOOST_LOG_TRIVIAL(debug) << "TakeLoot End" << id_dog << loot_objects_.size()<<dogs_.size(); 
 }
 
 void Dog::SetId(const Id& id) { id_ = id; }
