@@ -51,7 +51,7 @@ class Road : public json_loader::JsonObject {
     };
 
    public:
-    static constexpr Real WidthRoad = 0.4f;
+    static constexpr Real WidthRoad = 0.4;
 
     void LoadJsonNode(const ptree& tree) override;
     ptree GetJsonNode() const override;
@@ -60,17 +60,13 @@ class Road : public json_loader::JsonObject {
     constexpr static VerticalTag VERTICAL{};
 
     explicit Road(const ptree& tree) { LoadJsonNode(tree); }
-
     Road(HorizontalTag, Point start, Coord end_x) noexcept : start_{start}, end_{end_x, start.y} {}
-
     Road(VerticalTag, Point start, Coord end_y) noexcept : start_{start}, end_{start.x, end_y} {}
 
     bool IsHorizontal() const noexcept { return start_.y == end_.y; }
-
     bool IsVertical() const noexcept { return start_.x == end_.x; }
 
     Point GetStart() const noexcept { return start_; }
-
     Point GetEnd() const noexcept { return end_; }
 
    private:
@@ -132,7 +128,7 @@ class Map : public json_loader::JsonObject {
     const Buildings& GetBuildings() const { return buildings_; }
     const Roads& GetRoads() const { return roads_; }
     const Offices& GetOffices() const { return offices_; }
-    const ptree & GetSpecialLootInformation(int index) { return special_information_loots_[index]; }
+    const ptree & GetSpecialLootInformation(int index) { return special_information_loots_.at(index); }
     size_t GetSizeObjectLoots() const { return special_information_loots_.size(); } 
 
     int GetScoreByLoot(int loot_type) const;
@@ -191,7 +187,7 @@ class Dog : public TimeObject {
         : id_(id),
           name_(name.data(), name.size()),
           position_(position),
-          speed_({0.0f, 0.0f}),
+          speed_({0.0, 0.0}),
           direction_(Direction::NORTH),
           map_speed_(map_speed),
           current_map_(current_map), 
@@ -344,13 +340,13 @@ class CollisionManager : public collision_detector::ItemGathererProvider {
         return items_.size();
     }
     collision_detector::Item GetItem(size_t idx) const override {
-        return items_[idx];
+        return items_.at(idx);
     }
     size_t GatherersCount() const override{
         return gatherers_.size();
     }
     collision_detector::Gatherer GetGatherer(size_t idx) const override {
-        return gatherers_[idx];
+        return gatherers_.at(idx);
     }
 private:
     int offset_;

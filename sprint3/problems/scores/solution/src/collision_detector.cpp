@@ -14,21 +14,20 @@ geom::Rect MakeRectFromGatherer(Gatherer gatherer) {
         std::swap(gatherer.start_pos, gatherer.end_pos);
     if(IsHorizontal(gatherer))
         return {{gatherer.start_pos.x,gatherer.start_pos.y-gatherer.width},{gatherer.end_pos.x,gatherer.end_pos.y+gatherer.width}};
-    else 
-        return {{gatherer.start_pos.x-gatherer.width,gatherer.start_pos.y},{gatherer.end_pos.x + gatherer.width,gatherer.end_pos.y}};
+    return {{gatherer.start_pos.x-gatherer.width,gatherer.start_pos.y},{gatherer.end_pos.x + gatherer.width,gatherer.end_pos.y}};
 }
 
 bool CheckRectInherits(const geom::Point2D & point, const Gatherer & gatherer){
     auto rect = MakeRectFromGatherer(gatherer);
-    return point.x >= rect.left_down.x&&
-           point.x <= rect.right_up.x&&
+    return point.x >= rect.left_down.x &&
+           point.x <= rect.right_up.x &&
            point.y >= rect.left_down.y &&
            point.y <= rect.right_up.y;
 };
 
 bool CheckRectInherits(const geom::Point2D & point, const geom::Rect & rect){
-    return point.x >= rect.left_down.x&&
-           point.x <= rect.right_up.x&&
+    return point.x >= rect.left_down.x &&
+           point.x <= rect.right_up.x &&
            point.y >= rect.left_down.y &&
            point.y <= rect.right_up.y;
 };
@@ -49,11 +48,7 @@ std::vector<geom::Point2D> CheckCollision(const Gatherer & gatherer, const Item 
 }
 
 geom::Point2D GetProjectionOnGatherer(const Gatherer & gatherer, const geom::Point2D & point){
-    if(IsHorizontal(gatherer)) {
-        return {point.x,gatherer.start_pos.y};
-    } else {
-        return {gatherer.start_pos.x,point.y};
-    }
+    return (IsHorizontal(gatherer) ? geom::Point2D{point.x,gatherer.start_pos.y} : geom::Point2D{gatherer.start_pos.x,point.y});
 }
 
 double GetRange(const Gatherer & gatherer, const geom::Point2D & point1, const geom::Point2D & point2) {
@@ -77,11 +72,9 @@ bool IsItemInherits(const Gatherer & gatherer, const Item & item) {
 }
 
 double GetTime(const Gatherer & gatherer,const geom::Point2D & point) {
-    if(IsHorizontal(gatherer)) {
-        return fabs(point.x - gatherer.start_pos.x)/abs(gatherer.start_pos.x-gatherer.end_pos.x);
-    } else {
-        return fabs(point.y - gatherer.start_pos.y)/abs(gatherer.start_pos.y-gatherer.end_pos.y);
-    }
+    return IsHorizontal(gatherer) ?  
+        fabs(point.x - gatherer.start_pos.x)/abs(gatherer.start_pos.x-gatherer.end_pos.x) :
+        fabs(point.y - gatherer.start_pos.y)/abs(gatherer.start_pos.y-gatherer.end_pos.y);
 }
 
 std::pair<double, double> GetRangeAndTime(const Gatherer & gatherer, const Item & item) {
@@ -97,7 +90,7 @@ std::pair<double, double> GetRangeAndTime(const Gatherer & gatherer, const Item 
         return {-1.0,-1.0};
     double minimal_range = std::numeric_limits<double>::max();
     double current_time = 0.0;
-    for(auto point : points) {
+    for(const auto & point : points) {
         double range = GetRange(gatherer,point,GetProjectionOnGatherer(gatherer, point));
         if( minimal_range > range) {
             minimal_range = range;

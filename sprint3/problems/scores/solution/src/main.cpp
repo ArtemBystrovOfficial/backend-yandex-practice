@@ -74,6 +74,9 @@ void RunWorkers(unsigned n, const Fn& fn) {
 }  // namespace
 
 int main(int argc, char* argv[]) {
+    //Временное решение потом сделать более сложный рандомайзер
+    srand(time(0));
+
     InitBoostLogFilter();
 
     try {

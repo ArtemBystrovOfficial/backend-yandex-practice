@@ -10,10 +10,31 @@ namespace model {
 using namespace std::literals;
 
 namespace lit {
-const std::string id = "id"s, name = "name"s, roads = "roads"s, buildings = "buildings"s, offices = "offices"s, maps = "maps"s, x = "x"s, y = "y"s,
-                  x0 = "x0"s, y0 = "y0"s, x1 = "x1"s, y1 = "y1"s, w = "w"s, h = "h"s, offsetX = "offsetX"s, offsetY = "offsetY"s,
-                  dog_speed_default = "defaultDogSpeed", dog_speed = "dogSpeed", period = "period", probability = "probability", loot_type = "lootType",
-                  lootGeneratorConfig="lootGeneratorConfig",default_bag_capacity =  "defaultBagCapacity", bag_capacity = "bagCapacity", value = "value" ;
+const std::string id = "id"s,
+                  name = "name"s, 
+                  roads = "roads"s, 
+                  buildings = "buildings"s,
+                  offices = "offices"s, 
+                  maps = "maps"s, 
+                  x = "x"s, 
+                  y = "y"s,
+                  x0 = "x0"s, 
+                  y0 = "y0"s, 
+                  x1 = "x1"s, 
+                  y1 = "y1"s, 
+                  w = "w"s, 
+                  h = "h"s, 
+                  offsetX = "offsetX"s, 
+                  offsetY = "offsetY"s,
+                  dog_speed_default = "defaultDogSpeed", 
+                  dog_speed = "dogSpeed", 
+                  period = "period", 
+                  probability = "probability", 
+                  loot_type = "lootType",
+                  loot_generator_config="lootGeneratorConfig",
+                  default_bag_capacity =  "defaultBagCapacity", 
+                  bag_capacity = "bagCapacity", 
+                  value = "value" ;
 }
 int Map::GetScoreByLoot(int loot_type) const { 
     return special_information_loots_[loot_type].get<int>(lit::value); 
@@ -90,7 +111,6 @@ void Map::AddOffice(Office office) {
 }
 
 PointF Map::GetRandomCordinates() {
-    //srand(time(0));
     auto road = roads_[rand() % roads_.size()]; //random road
     auto start = road.GetStart();
     auto end = road.GetEnd();
@@ -232,7 +252,7 @@ void Game::LoadJsonNode(const ptree& tree) {
     try {
         dog_speed_default_ = tree.get<Real>(lit::dog_speed_default);
     } catch (...) {
-        dog_speed_default_ = 1.0f;
+        dog_speed_default_ = 1.0;
     }
 
     try {
@@ -241,7 +261,7 @@ void Game::LoadJsonNode(const ptree& tree) {
         default_bag_capacity_ = 3;
     }
 
-    auto gen_conf = tree.get_child(lit::lootGeneratorConfig);
+    auto gen_conf = tree.get_child(lit::loot_generator_config);
 
     auto period = gen_conf.get<Real>(lit::period);
     auto probability = gen_conf.get<Real>(lit::probability);
@@ -387,7 +407,7 @@ std::shared_ptr<Dog> GameSession::AddDog(std::string_view dog_name) {
     auto ptr = dogs_.emplace_back(std::make_shared<Dog>(
         Dog::Id(_last_dog_id++), 
         dog_name, 
-        is_game_randomize_start_cordinate_ ? map_->GetRandomCordinates() : PointF{0.0f, 0.0f},
+        is_game_randomize_start_cordinate_ ? map_->GetRandomCordinates() : PointF{0.0, 0.0},
         map_speed,
         map_,
         Bag{{},bag_capacity}
@@ -467,16 +487,16 @@ const std::string& Dog::GetName() { return name_; }
 bool Dog::MoveDog(Direction direction) {
     switch (direction) {
         case Direction::NORTH:
-            speed_ = {0.0f, -map_speed_};
+            speed_ = {0.0, -map_speed_};
             break;
         case Direction::WEST:
-            speed_ = {map_speed_, 0.0f};
+            speed_ = {map_speed_, 0.0};
             break;
         case Direction::EAST:
-            speed_ = {-map_speed_, 0.0f};
+            speed_ = {-map_speed_, 0.0};
             break;
         case Direction::SOUTH:
-            speed_ = {0.0f, map_speed_};
+            speed_ = {0.0, map_speed_};
             break;
         default:
             return false;
@@ -485,12 +505,12 @@ bool Dog::MoveDog(Direction direction) {
     return true;
 }
 
-void Dog::StopDog() { speed_ = {0.0f, 0.0f}; }
+void Dog::StopDog() { speed_ = {0.0, 0.0}; }
 
 void Dog::Tick(const std::chrono::milliseconds& ms) {
     if (!speed_.x && !speed_.y) 
         return;
-    static constexpr float millisecond_in_second = 1000.0f;
+    static constexpr float millisecond_in_second = 1000.0;
 
     Real new_x = position_.x + (speed_.x * ms.count() / millisecond_in_second), 
          new_y = position_.y + (speed_.y * ms.count() / millisecond_in_second);
