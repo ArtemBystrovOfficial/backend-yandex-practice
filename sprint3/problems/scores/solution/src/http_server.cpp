@@ -48,7 +48,7 @@ void SessionBase::OnRead(beast::error_code ec, std::size_t bytes_read) {
 
     _last_received_time_point = std::chrono::system_clock::now();
     LogRead();
-
+ 
     HandleRequest(std::move(request_));
 }
 void SessionBase::Close() {
