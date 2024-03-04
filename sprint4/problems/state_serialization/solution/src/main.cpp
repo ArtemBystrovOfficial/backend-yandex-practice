@@ -98,13 +98,10 @@ int main(int argc, char* argv[]) {
             });
 
             //APP SETTINGS
-
-            //data_serializer::DataSaver data_saver("working");
+            data_serializer::DataSaver data_saver("out.txt");
 
             app::App app(args.config_path);
-
-            
-
+            data_saver.Save(app);
             auto & mutable_game = app.GetMutableGame();
             if(vm.contains("randomize-spawn-points")) 
                 mutable_game.SetRandomizeStart(true);
