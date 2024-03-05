@@ -13,6 +13,7 @@
 #include "request_handler.h"
 #include "time.h"
 #include "auto_data_saver.hpp"
+#include <optional>
 
 using namespace std::literals;
 namespace net = boost::asio;
@@ -22,8 +23,8 @@ namespace po = boost::program_options;
 namespace {
  
 struct Args {
-    int tick_period;
-    std::string static_path, config_path;
+    int tick_period, save_state_period;
+    std::string static_path, config_path, state_file;
 };
 
 [[nodiscard]] std::optional<std::pair<Args, po::variables_map>> ParseCommandLine(int argc, const char* const argv[]) {
@@ -32,6 +33,8 @@ struct Args {
     Args args;
     desc.add_options()
         ("help,h", "produce help message")
+        ("state-file", po::value(&args.state_file)->value_name("file"s), "make save/load after crash")
+        ("save-state-period", po::value(&args.save_state_period)->value_name("milliseconds"s), "make save/load after selected milliseconds")
         ("tick-period,t", po::value(&args.tick_period)->value_name("milliseconds"s), "set tick period")
         ("config-file,c", po::value(&args.config_path)->value_name("file"s), "set config file path")
         ("www-root,w", po::value(&args.static_path)->value_name("dir"s), "set static files root")
@@ -98,13 +101,28 @@ int main(int argc, char* argv[]) {
             });
 
             //APP SETTINGS
-            data_serializer::DataSaver data_saver("out.txt");
-
             app::App app(args.config_path);
-            data_saver.Save(app);
+
+            std::shared_ptr<data_serializer::DataSaverTimeSyncWithGame> time_sync;
+            std::optional<data_serializer::DataSaver> data_saver;
+            if(vm.contains("state-file"))
+                data_saver = data_serializer::DataSaver(&app, args.state_file);
+
+
+            if(data_saver) {
+                if(data_saver->IsSaveExist()) {
+                    data_saver->Load();
+                }
+                if(vm.contains("save-state-period")) {
+                    time_sync = std::make_shared<data_serializer::DataSaverTimeSyncWithGame>
+                        (data_saver.value(),std::chrono::milliseconds(args.save_state_period));
+                    app.GetMutableGame().GetMutableTimeManager().AddSubscribers(time_sync, 0); //Сохранение в приоретете самое последнее
+                }
+            }
             auto & mutable_game = app.GetMutableGame();
             if(vm.contains("randomize-spawn-points")) 
                 mutable_game.SetRandomizeStart(true);
+
             //Пока strand для api глобальный но в будущем можно пересмотреть
             //и блокировать лишь определенные запросы к разделяемым файлам
             auto api_strand = net::make_strand(ioc);
@@ -131,6 +149,8 @@ int main(int argc, char* argv[]) {
                                     << logging::add_value(additional_data, json_loader::CreateTrivialJson({"port", "address"}, port, address));
 
             RunWorkers(std::max(1u, num_threads), [&ioc] { ioc.run(); });
+            if(data_saver) 
+                data_saver->Save();
         } else 
             exit(1);
     } catch (const std::exception& ex) {

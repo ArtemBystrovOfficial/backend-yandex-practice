@@ -1,13 +1,11 @@
 #pragma once
 #include <string_view>
-//#include "model.h"
-//#include "geometry.h"
-//#include "players.h"
 #include "app.h"
 #include <memory>
 #include <boost/archive/polymorphic_text_iarchive.hpp>
 #include <boost/archive/polymorphic_text_oarchive.hpp>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace model {
 template<class Archive>
@@ -16,15 +14,15 @@ void serialize(Archive & ar, SpeedF & speed, [[maybe_unused]] const unsigned ver
     ar& speed.y;
 }
 }
+
 namespace std {
 template<class Archive>
-void serialize(Archive & ar, std::vector<std::pair<int,int>> & vec, [[maybe_unused]] const unsigned version) {
-    for(auto [x,y] : vec) {
-        ar& x;
-        ar& y;
-    }
+void serialize(Archive & ar, pair<int,int> & pair, [[maybe_unused]] const unsigned version) {
+    ar& pair.first;
+    ar& pair.second;
 }
 }
+
 template<class Archive>
 void serialize(Archive & ar, PointF & point, [[maybe_unused]] const unsigned version) {
     ar& point.x;
@@ -205,7 +203,8 @@ public:
             }
         }
 
-        assert(false);
+        //Собаки без владельца будут уничтожены
+        return {};
     }
 
     template<class Archive>
@@ -223,13 +222,27 @@ private:
 
 class DataSaver {
     public:
-        explicit DataSaver(const std::string & path);
+        explicit DataSaver(app::App * app, const std::string & path);
 
-        void Save(const app::App &);
-        void Load(app::App &);
+        void Save();
+        void Load();
+        bool IsSaveExist();
 
     private:
         std::string path_;
+        app::App * app_;
+};
+
+class DataSaverTimeSyncWithGame : public model::TimeObject {
+    public:
+        DataSaverTimeSyncWithGame(DataSaver & data_saver, std::chrono::milliseconds ms_maximum) 
+            : data_saver_(data_saver) , ms_passed_(0), ms_maximum_(ms_maximum) {};
+
+        void Tick(const std::chrono::milliseconds& ms) override;
+    private:
+        std::chrono::milliseconds ms_passed_;
+        std::chrono::milliseconds ms_maximum_;
+        DataSaver & data_saver_;
 };
 
 }
