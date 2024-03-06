@@ -65,7 +65,7 @@ int main(int argc, const char* argv[]) {
                     json_result = "{\"result\":true}";
             }
             if(target == "all_books") {
-                auto result = local_work.exec("SELECT * FROM books;");
+                auto result = local_work.exec("SELECT id, title, author, year, ISBN FROM books ORDER BY year DESC, title ASC, author ASC, ISBN ASC;");
                 std::string json_collection = "["s;
                 for(auto row : result) {         
                     auto [id, title, author, year, ISBN] = row.as<int, std::string, std::string, int, std::optional<std::string>>();
