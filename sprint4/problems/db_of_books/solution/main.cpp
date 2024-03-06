@@ -57,6 +57,7 @@ int main(int argc, const char* argv[]) {
                     ISBN = json_args.at("ISBN").as_string().c_str();
 
                 local_work.exec_prepared(tag_movie_type_1, title, author, year, ISBN);
+                local_work.commit();
                 } catch(const std::exception& e) {
                     json_result = "{\"result\":false}"s;
                 }
