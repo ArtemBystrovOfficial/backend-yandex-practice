@@ -95,7 +95,7 @@ void DataSaver::Load() {
 
         app_->GetMutableGame().AddSession(session);
 
-        dogs_all.assign(dogs.begin(),dogs.end());
+        dogs_all.insert(dogs_all.end(),dogs.begin(),dogs.end());
         sessions_all.push_back(std::make_pair(session_uuid, session));
     }
     
