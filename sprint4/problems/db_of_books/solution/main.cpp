@@ -69,7 +69,14 @@ int main(int argc, const char* argv[]) {
                 std::string json_collection = "["s;
                 for(auto row : result) {         
                     auto [id, title, author, year, ISBN] = row.as<int, std::string, std::string, int, std::optional<std::string>>();
-                    value json_row = {{"id"s,id},{"title"s,title},{"author"s,author},{"year",year},{"ISBN"s,ISBN.value_or("null"s)}};
+                    value json_row = {{"id"s,id},{"title"s,title},{"author"s,author},{"year",year}};
+                    
+                    object json_object = json_row.as_object();
+                    if(ISBN)
+                        json_object["ISBN"s] = *ISBN;
+                    else 
+                        json_object["ISBN"s] = nullptr;
+                    json_row = std::move(json_object);    
 
                     std::stringstream ss;
                     ss << json_row;
