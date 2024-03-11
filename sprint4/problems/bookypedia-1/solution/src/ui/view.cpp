@@ -49,7 +49,7 @@ bool View::AddAuthor(std::istream& cmd_input) const {
         boost::algorithm::trim(name);
         use_cases_.AddAuthor(std::move(name));
     } catch (const std::exception& ex) {
-        output_ << "Failed to add author: "s + ex.what() << std::endl;
+        output_ << "Failed to add author" << std::endl;
     }
     return true;
 }
@@ -60,7 +60,7 @@ bool View::AddBook(std::istream& cmd_input) const {
             use_cases_.AddBook(params->publication_year,params->author_id, params->title);
         }
     } catch (const std::exception& ex) {
-        output_ << "Failed to add book: "s + ex.what() << std::endl;
+        output_ << "Failed to add book" << std::endl;
     }
     return true;
 }
@@ -82,7 +82,7 @@ bool View::ShowAuthorBooks() const {
             PrintVector(output_, GetAuthorBooks(*author_id));
         }
     } catch (const std::exception& ex) {
-        throw std::runtime_error("Failed to Show Books"s + ex.what());
+        throw std::runtime_error("Failed to Show Books");
     }
     return true;
 }
