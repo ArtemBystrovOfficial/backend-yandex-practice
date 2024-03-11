@@ -57,7 +57,7 @@ domain::BookRepository::list_books_t BookRepositoryImpl::GetList() {
 domain::BookRepository::list_books_t BookRepositoryImpl::GetBookByAuthorId(const domain::AuthorId& author_id) {
     pqxx::read_transaction r(connection_);
     domain::BookRepository::list_books_t books_list;
-    auto query_text = "SELECT * FROM books WHERE author_id = " + r.quote(author_id.ToString()) + " ORDER BY publication_year ASC;";
+    auto query_text = "SELECT * FROM books WHERE author_id = " + r.quote(author_id.ToString()) + " ORDER BY publication_year ASC, title ASC;";
     for(auto [id, author_id, title, year] : r.query<std::string, std::string, std::string, int>(pqxx::zview(query_text))) {
         books_list.push_back(domain::Book(domain::BookId::FromString(id), domain::AuthorId::FromString(author_id), title, year));
     }
