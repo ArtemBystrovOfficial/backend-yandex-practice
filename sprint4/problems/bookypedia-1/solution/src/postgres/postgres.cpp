@@ -38,7 +38,7 @@ void BookRepositoryImpl::Save(const domain::Book& book) {
     pqxx::work work{connection_};
     work.exec_params(
         R"(
-INSERT INTO books (id, author_id, title, year) VALUES ($1, $2, $3, $4);
+INSERT INTO books (id, author_id, title, publication_year) VALUES ($1, $2, $3, $4);
 )"_zv,
         book.GetId().ToString(), book.GetAuthorId().ToString(), book.GetTitle(), book.GetYear());
     work.commit();
@@ -57,7 +57,7 @@ domain::BookRepository::list_books_t BookRepositoryImpl::GetList() {
 domain::BookRepository::list_books_t BookRepositoryImpl::GetBookByAuthorId(const domain::AuthorId& author_id) {
     pqxx::read_transaction r(connection_);
     domain::BookRepository::list_books_t books_list;
-    auto query_text = "SELECT * FROM books WHERE author_id = " + r.quote(author_id.ToString()) + " ORDER BY year ASC;";
+    auto query_text = "SELECT * FROM books WHERE author_id = " + r.quote(author_id.ToString()) + " ORDER BY publication_year ASC;";
     for(auto [id, author_id, title, year] : r.query<std::string, std::string, std::string, int>(pqxx::zview(query_text))) {
         books_list.push_back(domain::Book(domain::BookId::FromString(id), domain::AuthorId::FromString(author_id), title, year));
     }
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS books (
     id UUID CONSTRAINT book_id_constraint PRIMARY KEY,
     author_id UUID NOT NULL,
     title varchar(100) NOT NULL,
-    year int NOT NULL,
+    publication_year int NOT NULL,
     CONSTRAINT books_authors FOREIGN KEY (author_id) REFERENCES authors (id)
 );
 )"_zv);
