@@ -47,7 +47,7 @@ INSERT INTO books (id, author_id, title, publication_year) VALUES ($1, $2, $3, $
 domain::BookRepository::list_books_t BookRepositoryImpl::GetList() { 
     pqxx::read_transaction r(connection_);
     domain::BookRepository::list_books_t books_list;
-    auto query_text = "SELECT * from books ORDER BY title ASC;"_zv;
+    auto query_text = "SELECT id, author_id, title, publication_year FROM books ORDER BY title ASC;"_zv;
     for(auto [id, author_id, title, year] : r.query<std::string, std::string, std::string, int>(query_text)) {
         books_list.push_back(domain::Book(domain::BookId::FromString(id), domain::AuthorId::FromString(author_id), title, year));
     }

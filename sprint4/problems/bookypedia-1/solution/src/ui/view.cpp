@@ -50,7 +50,7 @@ bool View::AddAuthor(std::istream& cmd_input) const {
         if(name.empty())
             throw std::runtime_error("empty name");
         use_cases_.AddAuthor(std::move(name));
-    } catch (const std::exception& ex) {
+    } catch (const std::exception& ) {
         output_ << "Failed to add author" << std::endl;
     }
     return true;
@@ -61,7 +61,7 @@ bool View::AddBook(std::istream& cmd_input) const {
         if (auto params = GetBookParams(cmd_input)) {
             use_cases_.AddBook(params->publication_year,params->author_id, params->title);
         }
-    } catch (const std::exception& ex) {
+    } catch (const std::exception& ) {
         output_ << "Failed to add book" << std::endl;
     }
     return true;
@@ -83,8 +83,8 @@ bool View::ShowAuthorBooks() const {
         if (auto author_id = SelectAuthor()) {
             PrintVector(output_, GetAuthorBooks(*author_id));
         }
-    } catch (const std::exception& ex) {
-        throw std::runtime_error("Failed to Show Books"s + ex.what());
+    } catch (const std::exception& ) {
+        throw std::runtime_error("Failed to Show Books"s);
     }
     return true;
 }
