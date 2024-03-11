@@ -84,7 +84,7 @@ bool View::ShowAuthorBooks() const {
             PrintVector(output_, GetAuthorBooks(*author_id));
         }
     } catch (const std::exception& ex) {
-        throw std::runtime_error("Failed to Show Books");
+        throw std::runtime_error("Failed to Show Books"s + ex.what());
     }
     return true;
 }
