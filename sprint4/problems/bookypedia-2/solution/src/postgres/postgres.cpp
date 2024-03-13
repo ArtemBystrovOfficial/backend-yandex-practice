@@ -112,15 +112,17 @@ domain::BookRepository::list_books_t BookRepositoryImpl::GetBookByAuthorId(const
     return books_list; 
 }
 
-std::optional<domain::Book> BookRepositoryImpl::GetBookByTitle(const std::string& title) {
+domain::BookRepository::list_books_t BookRepositoryImpl::GetBooksByTitle(const std::string& title) {
     auto query_text = R"(SELECT books.id, author_id, name, title, publication_year 
                         FROM books 
                         INNER JOIN authors ON books.author_id = authors.id WHERE title = )"
                         + worker_.quote(title) + ";"s;
-    auto tuple_opt =  worker_.query01<std::string, std::string,std::string, std::string, int>(pqxx::zview(query_text));
-    if(!tuple_opt)
-        return std::nullopt;
-    return domain::Book{domain::BookId::FromString(std::get<0>(*tuple_opt)),{domain::AuthorId::FromString(get<1>(*tuple_opt)),std::get<2>(*tuple_opt)},std::get<3>(*tuple_opt),std::get<4>(*tuple_opt)};
+    domain::BookRepository::list_books_t books_list;
+    for(auto [id, author_id, author_name, title, year] : worker_.query<std::string, std::string,std::string,  std::string, int>(query_text)) {
+        books_list.push_back(domain::Book(domain::BookId::FromString(id), {domain::AuthorId::FromString(author_id), author_name}, title, year));
+    }
+   
+    return books_list;
 }
 
 Database::Database(pqxx::connection connection)

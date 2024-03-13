@@ -115,14 +115,20 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         if(title.empty()) {
             book = SelectBook().value();
         } else {
-            auto book_opt = use_cases_.FindBookByTitle(title);
+            auto books = use_cases_.FindBooksByTitle(title);
+            auto book_opt = SelectBookOneOf(books);
+            //auto book_opt = use_cases_.FindBookByTitle(title);
             if(!book_opt)
                 throw std::invalid_argument("Book title not exist");
             book = *book_opt;
         }
         use_cases_.DeleteBookAndDependencies(book.id);
-    } catch (const std::exception& ex) {
-        output_ << "Book not found"s  << + ex.what() << std::endl;
+    } catch (const std::invalid_argument& ex) {
+        output_ << "Book not found"s  << std::endl;
+        use_cases_.Rollback();
+        return true;
+    } catch (...) {
+        output_ << "Failed to delete book"s  << std::endl;
         use_cases_.Rollback();
         return true;
     }
@@ -170,10 +176,11 @@ bool View::EditBook(std::istream& cmd_input) const {
         if(title.empty()) {
             book = SelectBook().value();
         } else {
-            auto author_opt = use_cases_.FindBookByTitle(title);
-            if(!author_opt)
+            auto books = use_cases_.FindBooksByTitle(title);
+            auto book_opt = SelectBookOneOf(books);
+            if(!book_opt)
                 throw std::invalid_argument("Author name not exist");
-            book = *author_opt;
+            book = *book_opt;
         }
 
         output_ << "Enter new title or empty line to use the current one (" << book.title << "):" << std::endl;
@@ -227,7 +234,8 @@ bool View::ShowBook(std::istream& cmd_input) const {
         if(title.empty()) {
             book = *SelectBook();
         } else {
-            auto book_opt = use_cases_.FindBookByTitle(title);
+            auto books = use_cases_.FindBooksByTitle(title);
+            auto book_opt = SelectBookOneOf(books);
             if(!book_opt)
                 throw std::invalid_argument("Book title not exist");
             book = *book_opt;
@@ -240,7 +248,6 @@ bool View::ShowBook(std::istream& cmd_input) const {
         if(!tags.empty())
             output_ << "Tags: " << boost::algorithm::join(tags, ", ") << std::endl;
     } catch (const std::exception& ex) {
-        std::cout << ex.what();
         //return false;
     }
     return true;
@@ -357,8 +364,10 @@ std::optional<std::string> View::SelectAuthor() const {
 }
 
 std::optional<detail::BookInfo> View::SelectBook() const {
-    //output_ << "Select author:" << std::endl;
-    auto books = GetBooks();
+    return SelectBookOneOf(GetBooks());
+}
+
+std::optional<detail::BookInfo> View::SelectBookOneOf( const std::vector<detail::BookInfo>& books) const {
     PrintVector(output_, books);
     output_ << "Enter the book # or empty line to cancel" << std::endl;
 

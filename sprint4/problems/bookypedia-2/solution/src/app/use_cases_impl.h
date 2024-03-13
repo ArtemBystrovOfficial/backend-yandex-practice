@@ -39,7 +39,7 @@ public:
     books_list_t GetBooks() override;
     books_list_t GetBooksAuthors(const std::string & author_id) override;
     std::optional<detail::AuthorInfo> FindAuthorByName(const std::string & name) override;
-    std::optional<detail::BookInfo> FindBookByTitle(const std::string & title) override;
+    books_list_t FindBooksByTitle(const std::string & title) override;
     tag_list_t GetTagsByBookId(const std::string &) override;
 
 private:

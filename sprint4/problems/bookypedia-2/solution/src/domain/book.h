@@ -57,7 +57,7 @@ public:
     virtual void Delete(const BookId& Book) = 0;
     virtual list_books_t GetList() = 0;
     virtual list_books_t GetBookByAuthorId(const AuthorId &) = 0;
-    virtual std::optional<domain::Book> GetBookByTitle(const std::string &) = 0;
+    virtual list_books_t GetBooksByTitle(const std::string &) = 0;
 
 protected:
     ~BookRepository() = default;

@@ -52,7 +52,7 @@ public:
     virtual books_list_t GetBooks() = 0;
     virtual books_list_t GetBooksAuthors(const std::string & author_id) = 0;
     virtual std::optional<detail::AuthorInfo> FindAuthorByName(const std::string & name) = 0;
-    virtual std::optional<detail::BookInfo> FindBookByTitle(const std::string & title) = 0;
+    virtual books_list_t FindBooksByTitle(const std::string & title) = 0;
     virtual tag_list_t GetTagsByBookId(const std::string &) = 0;
 protected:
     ~UseCases() = default;

@@ -34,7 +34,7 @@ public:
     void Save(const domain::Book& book) override;
     list_books_t GetList() override;
     list_books_t GetBookByAuthorId(const domain::AuthorId &) override;
-    std::optional<domain::Book> GetBookByTitle(const std::string &) override;
+    list_books_t GetBooksByTitle(const std::string &) override;
 
 private:
     pqxx::work& worker_;

@@ -30,6 +30,7 @@ void UseCasesImpl::DeleteAuthorAndDependencies(const std::string& author_id) {
 }
 
 void UseCasesImpl::DeleteBookAndDependencies(std::string& book_id) {
+    CascadeRemoveTags(BookId::FromString(book_id));
     last_unit_of_work_->Books().Delete(domain::BookId::FromString(book_id));
 }
 
@@ -89,11 +90,14 @@ std::optional<detail::AuthorInfo> UseCasesImpl::FindAuthorByName(const std::stri
     return detail::AuthorInfo{author->GetId().ToString(), author->GetName()};
 }
 
-std::optional<detail::BookInfo> UseCasesImpl::FindBookByTitle(const std::string& title) {
-    auto book = last_unit_of_work_->Books().GetBookByTitle(title);
-    if(!book)
-        return std::nullopt;
-    return detail::BookInfo{book->GetTitle(),book->GetYear(), book->GetAuthorName(), book->GetId().ToString()};   
+UseCases::books_list_t UseCasesImpl::FindBooksByTitle(const std::string& title) {
+    auto books_list = last_unit_of_work_->Books().GetBooksByTitle(title);
+    books_list_t books_list_case;
+    std::transform(books_list.begin(), books_list.end(),std::back_inserter(books_list_case),
+    [](const Book & book) -> detail::BookInfo {
+        return detail::BookInfo{book.GetTitle(),book.GetYear(),book.GetAuthorName(),book.GetId().ToString()};
+    });
+    return books_list_case;
 }
 
 UseCases::tag_list_t UseCasesImpl::GetTagsByBookId(const std::string& author_id) {
