@@ -39,9 +39,11 @@ public:
     virtual void Commit() {}
     virtual void Rollback() {}
 
+    virtual void EditBook(const std::string & book_id, const std::string & title, int publication_year, const std::vector<std::string> & tags) = 0;
     virtual void EditAuthorName(const std::string & author_id, const std::string & author_new_name) = 0;
     virtual void DeleteAuthorAndDependenciesByName(const std::string & author_name) = 0;
     virtual void DeleteAuthorAndDependencies(const std::string & author_id) = 0;
+    virtual void DeleteBookAndDependencies (std::string & book_id) = 0;
     virtual std::string AddAuthor(const std::string& name) = 0;
     virtual std::string AddBook(int year, const std::string & author_id, const std::string& title) = 0;
     virtual void AddTags(const std::string & book_id,const std::vector<std::string> & tags) = 0;

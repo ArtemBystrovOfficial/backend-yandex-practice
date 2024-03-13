@@ -29,6 +29,10 @@ ON CONFLICT (id) DO UPDATE SET name=$2;
         author.GetId().ToString(), author.GetName());
 }
 
+void TagRepositoryImpl::ClearTagsByBookId(const domain::BookId& book_id) {
+    worker_.exec_params( R"( DELETE FROM book_tags WHERE book_id = $1; )"_zv, book_id.ToString());
+}
+
 void TagRepositoryImpl::Save(const domain::Tag& tag) {
     worker_.exec_params(
         R"(
@@ -48,7 +52,6 @@ domain::TagRepository::list_tags_t TagRepositoryImpl::GetTagsByBookId(const doma
 }
 
 domain::AuthorRepository::list_authors_t AuthorRepositoryImpl::GetList() { 
-    //pqxx::read_transaction r(connection_);
     domain::AuthorRepository::list_authors_t authors_list;
 
     auto query_text = "SELECT * FROM authors ORDER BY name ASC;"_zv;
@@ -66,8 +69,19 @@ std::optional <domain::Author> AuthorRepositoryImpl::FindAuthorByName(const std:
     return domain::Author(domain::AuthorId::FromString(std::get<0>(*author)), std::get<1>(*author)); 
 }
 
+void BookRepositoryImpl::Delete(const domain::BookId& book_id) {
+    worker_.exec_params( "DELETE FROM books WHERE id = $1; "_zv, book_id.ToString());
+}
+
+void BookRepositoryImpl::Edit(const domain::Book& book) {
+        worker_.exec_params(
+        R"(
+UPDATE books SET title = $2, publication_year = $3 WHERE id = $1;
+)"_zv,
+        book.GetId().ToString(), book.GetTitle(), book.GetYear());
+}
+
 void BookRepositoryImpl::Save(const domain::Book& book) {
-    //pqxx::work work{connection_};
     worker_.exec_params(
         R"(
 INSERT INTO books (id, author_id, title, publication_year) VALUES ($1, $2, $3, $4);
@@ -76,7 +90,6 @@ INSERT INTO books (id, author_id, title, publication_year) VALUES ($1, $2, $3, $
 }
 
 domain::BookRepository::list_books_t BookRepositoryImpl::GetList() { 
-    //pqxx::read_transaction r(connection_);
     domain::BookRepository::list_books_t books_list;
     auto query_text = R"(SELECT books.id, author_id, name, title, publication_year 
                         FROM books 
@@ -89,7 +102,6 @@ domain::BookRepository::list_books_t BookRepositoryImpl::GetList() {
 }
 
 domain::BookRepository::list_books_t BookRepositoryImpl::GetBookByAuthorId(const domain::AuthorId& author_id) {
-    //pqxx::read_transaction r(connection_);
     domain::BookRepository::list_books_t books_list;
     auto query_text = "SELECT id, author_id, title, publication_year FROM books WHERE author_id = " + worker_.quote(author_id.ToString()) + 
                       " ORDER BY publication_year ASC, title ASC;";

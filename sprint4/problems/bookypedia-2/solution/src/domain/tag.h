@@ -28,6 +28,7 @@ class TagRepository {
 public:
     using list_tags_t = std::vector<Tag>;
 
+    virtual void ClearTagsByBookId(const BookId & book) = 0;
     virtual void Save(const Tag& tag) = 0;
     virtual list_tags_t GetTagsByBookId(const BookId & book) = 0;
 

@@ -29,6 +29,8 @@ public:
         : worker_{worker} {        
     }
 
+    void Delete(const domain::BookId& Book) override;
+    void Edit(const domain::Book& Book) override;
     void Save(const domain::Book& book) override;
     list_books_t GetList() override;
     list_books_t GetBookByAuthorId(const domain::AuthorId &) override;
@@ -44,6 +46,7 @@ public:
         : worker_{worker} {        
     }
 
+    void ClearTagsByBookId(const domain::BookId & book_id) override;
     void Save(const domain::Tag& tag) override;
     list_tags_t GetTagsByBookId(const domain::BookId & book) override;
 private:

@@ -53,6 +53,8 @@ public:
     using list_books_t = std::vector<Book>;
 
     virtual void Save(const Book& Book) = 0;
+    virtual void Edit(const Book& Book) = 0;
+    virtual void Delete(const BookId& Book) = 0;
     virtual list_books_t GetList() = 0;
     virtual list_books_t GetBookByAuthorId(const AuthorId &) = 0;
     virtual std::optional<domain::Book> GetBookByTitle(const std::string &) = 0;
