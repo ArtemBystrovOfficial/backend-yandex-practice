@@ -74,7 +74,7 @@ bool View::AddBook(std::istream& cmd_input) const {
             use_cases_.AddTags(book_id, tags);
         }
     } catch (const std::exception& ex) {
-        output_ << "Failed to add book" << ex.what() << std::endl;
+        output_ << "Failed to add book" << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -97,7 +97,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             use_cases_.DeleteAuthorAndDependenciesByName(name);
         }
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete author" << ex.what() << std::endl;
+        output_ << "Failed to delete author" << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -121,7 +121,7 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         }
         use_cases_.DeleteBookAndDependencies(book.id);
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete book" << ex.what() << std::endl;
+        output_ << "Failed to delete book" << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -152,7 +152,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
         use_cases_.EditAuthorName(author_id, new_name);
 
     } catch (const std::exception& ex) {
-        output_ << "Failed to edit author" << ex.what() << std::endl;
+        output_ << "Failed to edit author" << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -191,14 +191,14 @@ bool View::EditBook(std::istream& cmd_input) const {
             new_year = book.publication_year;
 
         output_ << "Enter tags ( current tags: " << boost::algorithm::join(use_cases_.GetTagsByBookId(book.id), ", ") << "):" << std::endl;
-        
+
         std::string tags;
         std::getline(input_, tags);
         boost::algorithm::trim(tags);
 
         use_cases_.EditBook(book.id,new_title, new_year_value, ParseTags(tags));
     } catch (const std::exception& ex) {
-        output_ << "Book not found" << ex.what() << std::endl;
+        output_ << "Book not found" << std::endl;
         use_cases_.Rollback();
         return false;
     }
