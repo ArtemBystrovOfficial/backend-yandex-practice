@@ -188,7 +188,7 @@ bool View::EditBook(std::istream& cmd_input) const {
         boost::algorithm::trim(new_year);
         auto new_year_value = std::atoi(new_year.c_str());
         if(new_year.empty())
-            new_year = book.publication_year;
+            new_year_value = book.publication_year;
 
         output_ << "Enter tags ( current tags: " << boost::algorithm::join(use_cases_.GetTagsByBookId(book.id), ", ") << "):" << std::endl;
 
