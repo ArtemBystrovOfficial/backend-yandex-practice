@@ -122,7 +122,7 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         }
         use_cases_.DeleteBookAndDependencies(book.id);
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete book"s  << std::endl;
+        output_ << "Book not found"s  << + ex.what() << std::endl;
         use_cases_.Rollback();
         return true;
     }
@@ -240,6 +240,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
         if(!tags.empty())
             output_ << "Tags: " << boost::algorithm::join(tags, ", ") << std::endl;
     } catch (const std::exception& ex) {
+        std::cout << ex.what();
         //return false;
     }
     return true;
