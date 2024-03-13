@@ -116,8 +116,9 @@ bool View::DeleteBook(std::istream& cmd_input) const {
             book = SelectBook().value();
         } else {
             auto books = use_cases_.FindBooksByTitle(title);
+            if(books.empty())
+                throw std::invalid_argument("Book title not exist");
             auto book_opt = SelectBookOneOf(books);
-            //auto book_opt = use_cases_.FindBookByTitle(title);
             if(!book_opt)
                 throw std::invalid_argument("Book title not exist");
             book = *book_opt;
@@ -177,6 +178,8 @@ bool View::EditBook(std::istream& cmd_input) const {
             book = SelectBook().value();
         } else {
             auto books = use_cases_.FindBooksByTitle(title);
+            if(books.empty())
+                throw std::invalid_argument("Book title not exist");
             auto book_opt = SelectBookOneOf(books);
             if(!book_opt)
                 throw std::invalid_argument("Author name not exist");
@@ -235,6 +238,8 @@ bool View::ShowBook(std::istream& cmd_input) const {
             book = *SelectBook();
         } else {
             auto books = use_cases_.FindBooksByTitle(title);
+            if(books.empty())
+                throw std::invalid_argument("Book title not exist");
             auto book_opt = SelectBookOneOf(books);
             if(!book_opt)
                 throw std::invalid_argument("Book title not exist");
