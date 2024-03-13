@@ -113,14 +113,19 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         boost::algorithm::trim(title);
         detail::BookInfo book;
         if(title.empty()) {
-            book = SelectBook().value();
+            auto book_opt = SelectBook();
+            if(book_opt.has_value())
+                book = *book_opt;
+            else
+                return true;
         } else {
             auto books = use_cases_.FindBooksByTitle(title);
             if(books.empty())
                 throw std::invalid_argument("Book title not exist");
             auto book_opt = SelectBookOneOf(books);
-            if(!book_opt)
-                throw std::invalid_argument("Book title not exist");
+            if(!book_opt) {
+                return true;
+            }
             book = *book_opt;
         }
         use_cases_.DeleteBookAndDependencies(book.id);
