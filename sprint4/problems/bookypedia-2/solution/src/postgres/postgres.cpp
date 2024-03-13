@@ -9,6 +9,7 @@ using namespace std::literals;
 using pqxx::operator"" _zv;
 
 void AuthorRepositoryImpl::DeleteAuthorAndDependencies(const domain::Author& author) {
+
     if(!author.GetName().empty()) {
         worker_.exec_params( R"( DELETE FROM authors WHERE name = $1; )"_zv,
         author.GetName());

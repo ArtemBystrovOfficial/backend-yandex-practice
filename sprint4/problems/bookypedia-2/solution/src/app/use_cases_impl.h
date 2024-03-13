@@ -43,6 +43,9 @@ public:
     tag_list_t GetTagsByBookId(const std::string &) override;
 
 private:
+    void CascadeRemoveBooksAndTags(const domain::AuthorId & author_id);
+    void CascadeRemoveTags(const domain::BookId & book_id);
+
     std::shared_ptr<UnitOfWork> last_unit_of_work_;
     UnitOfWorkFactory & unit_factory_;
 };

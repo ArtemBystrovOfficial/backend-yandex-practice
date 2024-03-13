@@ -20,10 +20,12 @@ void UseCasesImpl::EditAuthorName(const std::string& author_id,
 }
 
 void UseCasesImpl::DeleteAuthorAndDependenciesByName(const std::string& author_name) {
+    CascadeRemoveBooksAndTags(last_unit_of_work_->Authors().FindAuthorByName(author_name)->GetId());
     last_unit_of_work_->Authors().DeleteAuthorAndDependencies({{}, author_name});
 }
 
 void UseCasesImpl::DeleteAuthorAndDependencies(const std::string& author_id) {
+    CascadeRemoveBooksAndTags(AuthorId::FromString(author_id));
     last_unit_of_work_->Authors().DeleteAuthorAndDependencies({domain::AuthorId::FromString(author_id), ""});
 }
 
@@ -102,6 +104,18 @@ UseCases::tag_list_t UseCasesImpl::GetTagsByBookId(const std::string& author_id)
         return tag.GetTag();
     });
     return tags_list_case;
+}
+
+void UseCasesImpl::CascadeRemoveBooksAndTags(const AuthorId & author_id) {
+    auto books = last_unit_of_work_->Books().GetBookByAuthorId(author_id);
+    for(const auto & book : books) {
+        CascadeRemoveTags(book.GetId());
+        last_unit_of_work_->Books().Delete(book.GetId());
+    }
+}
+
+void UseCasesImpl::CascadeRemoveTags(const BookId& book_id) {
+    last_unit_of_work_->Tags().ClearTagsByBookId(book_id);
 }
 
 }  // namespace app
