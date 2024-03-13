@@ -264,13 +264,14 @@ std::vector<std::string> View::ParseTags(const std::string& tags_raw) const {
     
     boost::split(tokens, tags_without_extra_spaces, boost::is_any_of(","));
 
+    for(auto & token : tokens) {
+        boost::algorithm::trim(token);
+    }
+
     tokens.erase(std::remove_if(tokens.begin(), tokens.end(),
                             [](const std::string& s) { return s.empty(); }),
              tokens.end());
 
-    for(auto & token : tokens) {
-        boost::algorithm::trim(token);
-    }
     std::sort(tokens.begin(), tokens.end());
     auto last = std::unique(tokens.begin(), tokens.end());
     tokens.erase(last, tokens.end());
