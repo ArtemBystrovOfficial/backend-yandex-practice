@@ -59,8 +59,9 @@ bool View::AddAuthor(std::istream& cmd_input) const {
             throw std::runtime_error("empty name");
         use_cases_.AddAuthor(std::move(name));
     } catch (const std::exception& ex) {
-        output_ << "Failed to add author"s + ex.what() << std::endl;
+        output_ << "Failed to add author"s  << std::endl;
         use_cases_.Rollback();
+        return true;
     }
     use_cases_.Commit();
     return true;
@@ -76,7 +77,7 @@ bool View::AddBook(std::istream& cmd_input) const {
     } catch (const std::exception& ex) {
         output_ << "Failed to add book"s +ex.what() << std::endl;
         use_cases_.Rollback();
-        return false;
+        return true;
     }
     use_cases_.Commit();
     return true;
@@ -97,9 +98,9 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             use_cases_.DeleteAuthorAndDependenciesByName(name);
         }
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete author"s + ex.what() << std::endl;
+        output_ << "Failed to delete author"s  << std::endl;
         use_cases_.Rollback();
-        return false;
+        return true;
     }
     use_cases_.Commit();
     return true;
@@ -121,9 +122,9 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         }
         use_cases_.DeleteBookAndDependencies(book.id);
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete book"s + ex.what() << std::endl;
+        output_ << "Failed to delete book"s  << std::endl;
         use_cases_.Rollback();
-        return false;
+        return true;
     }
     use_cases_.Commit();
     return true;
@@ -152,9 +153,9 @@ bool View::EditAuthor(std::istream& cmd_input) const {
         use_cases_.EditAuthorName(author_id, new_name);
 
     } catch (const std::exception& ex) {
-        output_ << "Failed to edit author"s + ex.what() << std::endl;
+        output_ << "Failed to edit author"s  << std::endl;
         use_cases_.Rollback();
-        return false;
+        return true;
     }
     use_cases_.Commit();
     return true; 
@@ -198,9 +199,9 @@ bool View::EditBook(std::istream& cmd_input) const {
 
         use_cases_.EditBook(book.id,new_title, new_year_value, ParseTags(tags));
     } catch (const std::exception& ex) {
-        output_ << "Book not found"s + ex.what() << std::endl;
+        output_ << "Book not found"s  << std::endl;
         use_cases_.Rollback();
-        return false;
+        return true;
     }
     use_cases_.Commit();
     return true; 
@@ -250,7 +251,7 @@ bool View::ShowAuthorBooks() const {
             PrintVector(output_, GetAuthorBooks(*author_id));
         }
     } catch (const std::exception& ex) {
-        throw std::runtime_error("Failed to Show Books"s + ex.what());
+        throw std::runtime_error("Failed to Show Books"s );
     }
     return true;
 }
