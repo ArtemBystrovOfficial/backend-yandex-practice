@@ -58,8 +58,8 @@ bool View::AddAuthor(std::istream& cmd_input) const {
         if(name.empty())
             throw std::runtime_error("empty name");
         use_cases_.AddAuthor(std::move(name));
-    } catch (const std::exception& ) {
-        output_ << "Failed to add author" << std::endl;
+    } catch (const std::exception& ex) {
+        output_ << "Failed to add author"s + ex.what() << std::endl;
         use_cases_.Rollback();
     }
     use_cases_.Commit();
@@ -74,7 +74,7 @@ bool View::AddBook(std::istream& cmd_input) const {
             use_cases_.AddTags(book_id, tags);
         }
     } catch (const std::exception& ex) {
-        output_ << "Failed to add book" << std::endl;
+        output_ << "Failed to add book"s +ex.what() << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -97,7 +97,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             use_cases_.DeleteAuthorAndDependenciesByName(name);
         }
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete author" << std::endl;
+        output_ << "Failed to delete author"s + ex.what() << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -121,7 +121,7 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         }
         use_cases_.DeleteBookAndDependencies(book.id);
     } catch (const std::exception& ex) {
-        output_ << "Failed to delete book" << std::endl;
+        output_ << "Failed to delete book"s + ex.what() << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -152,7 +152,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
         use_cases_.EditAuthorName(author_id, new_name);
 
     } catch (const std::exception& ex) {
-        output_ << "Failed to edit author" << std::endl;
+        output_ << "Failed to edit author"s + ex.what() << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -198,7 +198,7 @@ bool View::EditBook(std::istream& cmd_input) const {
 
         use_cases_.EditBook(book.id,new_title, new_year_value, ParseTags(tags));
     } catch (const std::exception& ex) {
-        output_ << "Book not found" << std::endl;
+        output_ << "Book not found"s + ex.what() << std::endl;
         use_cases_.Rollback();
         return false;
     }
@@ -235,11 +235,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
         output_ << "Title: " << book.title << std::endl;
         output_ << "Author: " << book.author_name << std::endl;
         output_ << "Publication year: " << book.publication_year << std::endl;
-        output_ << "Tags: " << std::endl;
-        for(const auto & tag : use_cases_.GetTagsByBookId(book.id)) {
-            output_ << tag << " ";
-        }
-        output_ << std::endl;
+        output_ << "Tags: " << boost::algorithm::join(use_cases_.GetTagsByBookId(book.id), ", ") << std::endl;
     } catch (const std::exception& ex) {
         //return false;
     }
@@ -251,8 +247,8 @@ bool View::ShowAuthorBooks() const {
         if (auto author_id = SelectAuthor()) {
             PrintVector(output_, GetAuthorBooks(*author_id));
         }
-    } catch (const std::exception& ) {
-        throw std::runtime_error("Failed to Show Books"s);
+    } catch (const std::exception& ex) {
+        throw std::runtime_error("Failed to Show Books"s + ex.what());
     }
     return true;
 }
