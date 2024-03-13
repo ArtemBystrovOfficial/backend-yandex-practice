@@ -235,7 +235,9 @@ bool View::ShowBook(std::istream& cmd_input) const {
         output_ << "Title: " << book.title << std::endl;
         output_ << "Author: " << book.author_name << std::endl;
         output_ << "Publication year: " << book.publication_year << std::endl;
-        output_ << "Tags: " << boost::algorithm::join(use_cases_.GetTagsByBookId(book.id), ", ") << std::endl;
+        auto tags = use_cases_.GetTagsByBookId(book.id);
+        if(!tags.empty())
+            output_ << "Tags: " << boost::algorithm::join(tags, ", ") << std::endl;
     } catch (const std::exception& ex) {
         //return false;
     }
