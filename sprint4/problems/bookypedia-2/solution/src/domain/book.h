@@ -14,10 +14,10 @@ using BookId = util::TaggedUUID<detail::BookTag>;
 
 class Book {
 public:
-    Book(BookId id, AuthorId author_id, std::string title, int year)
+    Book(BookId id, Author author, std::string title, int year)
         : id_(std::move(id))
         , title_(std::move(title))
-        , author_id_(std::move(author_id))
+        , author_(std::move(author))
         , year_(year) {
     }
 
@@ -26,7 +26,11 @@ public:
     }
 
     const AuthorId& GetAuthorId() const noexcept {
-        return author_id_;
+        return author_.GetId();
+    }
+
+    const std::string & GetAuthorName() const noexcept {
+        return author_.GetName();
     }
 
     const std::string& GetTitle() const noexcept {
@@ -39,7 +43,7 @@ public:
 
 private:
     BookId id_;
-    AuthorId author_id_;
+    domain::Author author_; //TODO std::variant <id, author>
     std::string title_;
     int year_;
 };
@@ -51,6 +55,7 @@ public:
     virtual void Save(const Book& Book) = 0;
     virtual list_books_t GetList() = 0;
     virtual list_books_t GetBookByAuthorId(const AuthorId &) = 0;
+    virtual std::optional<domain::Book> GetBookByTitle(const std::string &) = 0;
 
 protected:
     ~BookRepository() = default;

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "../util/tagged_uuid.h"
+#include <optional>
 
 namespace domain {
 
@@ -35,8 +36,10 @@ class AuthorRepository {
 public:
     using list_authors_t = std::vector<Author>;
 
+    virtual void DeleteAuthorAndDependencies(const Author& author) = 0;
     virtual void Save(const Author& author) = 0;
     virtual list_authors_t GetList() = 0;
+    virtual std::optional <domain::Author> FindAuthorByName(const std::string &) = 0;
 
 protected:
     ~AuthorRepository() = default;

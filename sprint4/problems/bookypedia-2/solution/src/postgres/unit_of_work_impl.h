@@ -19,9 +19,12 @@ class UnitOfWorkImpl : public app::UnitOfWork {
         BookRepositoryImpl & Books() override {
             return books_;
         }
+        TagRepositoryImpl & Tags() override {
+            return tags_;
+        }
         ~UnitOfWorkImpl() {
-            if(!is_commited_)
-                Commit();
+            //if(!is_commited_)
+            //    Commit();
         }
     private:
         bool is_commited_{false};
@@ -31,6 +34,7 @@ class UnitOfWorkImpl : public app::UnitOfWork {
 
         postgres::AuthorRepositoryImpl authors_{worker_};
         postgres::BookRepositoryImpl books_{worker_};
+        postgres::TagRepositoryImpl tags_{worker_};
 };
 
 }

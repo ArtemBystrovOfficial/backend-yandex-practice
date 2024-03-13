@@ -4,6 +4,7 @@
 
 #include "../domain/author.h"
 #include "../domain/book.h"
+#include "../domain/tag.h"
 
 namespace postgres {
 
@@ -13,8 +14,10 @@ public:
         : worker_{worker} {
     }
 
+    void DeleteAuthorAndDependencies(const domain::Author& author) override;
     void Save(const domain::Author& author) override;
     list_authors_t GetList() override;
+    std::optional <domain::Author> FindAuthorByName(const std::string & name) override;
 
 private:
     pqxx::work& worker_;
@@ -29,7 +32,20 @@ public:
     void Save(const domain::Book& book) override;
     list_books_t GetList() override;
     list_books_t GetBookByAuthorId(const domain::AuthorId &) override;
+    std::optional<domain::Book> GetBookByTitle(const std::string &) override;
 
+private:
+    pqxx::work& worker_;
+};
+
+class TagRepositoryImpl : public domain::TagRepository {
+public:
+    explicit TagRepositoryImpl(pqxx::work& worker)
+        : worker_{worker} {        
+    }
+
+    void Save(const domain::Tag& tag) override;
+    list_tags_t GetTagsByBookId(const domain::BookId & book) override;
 private:
     pqxx::work& worker_;
 };

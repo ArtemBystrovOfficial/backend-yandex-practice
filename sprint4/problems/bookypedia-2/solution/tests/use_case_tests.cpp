@@ -3,7 +3,7 @@
 #include "../src/app/use_cases_impl.h"
 #include "../src/domain/author.h"
 #include "../src/domain/book.h"
-
+/*
 namespace {
 
 struct MockAuthorRepository : domain::AuthorRepository {
@@ -33,7 +33,7 @@ struct Fixture {
 }  // namespace
 
 SCENARIO_METHOD(Fixture, "Book Adding") {
-    /*
+    
     GIVEN("Use cases") {
         app::UseCasesImpl use_cases{authors, books};
 
@@ -48,5 +48,6 @@ SCENARIO_METHOD(Fixture, "Book Adding") {
             }
         }
     }
-    */
+    
 }
+*/
