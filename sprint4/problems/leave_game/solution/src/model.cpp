@@ -498,8 +498,11 @@ void GameSession::Tick(const std::chrono::milliseconds& ms) {
 }
 
 bool GameSession::TakeLoot(int id_dog, int id_loot) {
-    if(id_loot >= loot_objects_.size() || id_dog >= dogs_.size())
-        throw std::invalid_argument("id_dog or id_loot not valid"); 
+    if(id_loot >= loot_objects_.size())
+        return false;
+
+    if(id_dog >= dogs_.size())
+        return false;
 
     auto & bag = dogs_[id_dog]->GetMutableBag();
 
@@ -552,17 +555,20 @@ bool Dog::MoveDog(Direction direction) {
 void Dog::StopDog() { 
     speed_ = {0.0, 0.0}; 
     BOOST_LOG_TRIVIAL(debug) << "DOG STOPPED!";
-    exited_time_ = std::chrono::steady_clock::now();
+    exited_time_ = current_absolute_time_;
 }
 
 void Dog::Tick(const std::chrono::milliseconds& ms) {
+    current_absolute_time_ += ms;
+
     if(IsStopped() && exited_time_ && !is_exited_) {
-        auto time_after_stopped = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - *exited_time_).count();
+        auto time_after_stopped = std::chrono::duration_cast<std::chrono::milliseconds>(current_absolute_time_ - *exited_time_).count() / 1000.0;
         BOOST_LOG_TRIVIAL(debug) << time_after_stopped << " " << dog_retirement_time_;
         if(time_after_stopped  >= dog_retirement_time_) {
             auto deleted_time = std::chrono::steady_clock::now();
-            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(deleted_time - entered_time_).count();
-            request_to_save_retired_player_s(name_, score_, ms);
+            auto ms_after = std::chrono::duration_cast<std::chrono::milliseconds>(current_absolute_time_ -
+             std::chrono::steady_clock::time_point(std::chrono::milliseconds(0))).count();
+            request_to_save_retired_player_s(name_, score_, ms_after);
         }
     }
 

@@ -154,4 +154,38 @@ std::string_view ExtractArg(Args_t& args) {
     return arg;
 }
 
+std::map<std::string, std::string> GetPropertiesFromUrl(const std::string& url) {
+    std::map<std::string, std::string> properties;
+
+    std::size_t pos = url.find('?');
+    if (pos != std::string::npos) {
+
+        std::string queryString = url.substr(pos + 1);
+
+        std::size_t startPos = 0;
+        std::size_t endPos;
+        while ((endPos = queryString.find('&', startPos)) != std::string::npos) {
+
+            std::string property = queryString.substr(startPos, endPos - startPos);
+            std::size_t equalPos = property.find('=');
+            if (equalPos != std::string::npos) {
+                std::string key = property.substr(0, equalPos);
+                std::string value = property.substr(equalPos + 1);
+                properties[key] = value;
+            }
+            startPos = endPos + 1;
+        }
+
+        std::string lastProperty = queryString.substr(startPos);
+        std::size_t equalPos = lastProperty.find('=');
+        if (equalPos != std::string::npos) {
+            std::string key = lastProperty.substr(0, equalPos);
+            std::string value = lastProperty.substr(equalPos + 1);
+            properties[key] = value;
+        }
+    }
+
+    return properties;
+}
+
 }  // namespace util

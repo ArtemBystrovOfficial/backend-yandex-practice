@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string_view>
 #include <variant>
+#include <map>
 
 #include "headers.h"
 
@@ -35,5 +36,7 @@ void ReadFileToBuffer(message_pack_t& response, std::string_view path_sv, std::s
 std::string ExecuteAuthorized(HttpResource& req) noexcept(false);
 
 std::string_view ExtractArg(Args_t & arg);
+
+std::map<std::string, std::string> GetPropertiesFromUrl(const std::string& url);
 
 }  // namespace util

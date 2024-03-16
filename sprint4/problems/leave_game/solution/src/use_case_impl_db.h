@@ -11,7 +11,7 @@ public:
     explicit UseCasesImpl(postgres::Database & database) : database_(database) {}
 
     void AddPlayerRetired(const RetiredPlayerInfo & player) override;
-    players_list_t GetPlayersRetired() override;
+    players_list_t GetPlayersRetired(int offset, int limit) override;
 
 private:
     postgres::Database & database_;

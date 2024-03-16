@@ -17,7 +17,7 @@ public:
         : connection_(std::move(connection)) {
     }
 
-    retired_players_t GetSortedRetiredPlayersList() override;
+    retired_players_t GetSortedRetiredPlayersList(int offset, int limit) override;
     virtual void AddRetriedPlayer(const domain::RetiredPlayer & player) override;
 private:
     ConnectionUnit connection_;

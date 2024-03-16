@@ -195,9 +195,9 @@ class Dog : public TimeObject {
           current_map_(current_map), 
           bag_(bag),
           score_(0),
+          current_absolute_time_(std::chrono::milliseconds(0)),
           dog_retirement_time_(dog_retirement_time) {
             position_before_ = position;
-            entered_time_ = std::chrono::steady_clock::now();
             StopDog();
           };
 
@@ -259,7 +259,8 @@ class Dog : public TimeObject {
     //Exit System
     Real dog_retirement_time_;
     bool is_exited_{false};
-    std::chrono::steady_clock::time_point entered_time_;
+
+    std::chrono::steady_clock::time_point current_absolute_time_;
     std::optional<std::chrono::steady_clock::time_point> exited_time_;
 };
 

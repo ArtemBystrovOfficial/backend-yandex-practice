@@ -44,7 +44,7 @@ class RetiredPlayerRepository {
 public: 
     using retired_players_t = std::vector<RetiredPlayer>; 
 
-    virtual retired_players_t GetSortedRetiredPlayersList() = 0;
+    virtual retired_players_t GetSortedRetiredPlayersList(int offset, int limit) = 0;
     virtual void AddRetriedPlayer(const RetiredPlayer &) = 0;
 
 protected:

@@ -49,8 +49,9 @@ bool Game::GetHandler(HttpResource&& res, bool is_ping) {
         if (arg == "state"sv) {
             CALL_WITH_PING(is_ping, GetState(std::move(res)))
         }
-        if (arg == "records") {
-            CALL_WITH_PING(is_ping, GetRecords(std::move(res)))
+        if (arg.substr(0,7) == "records"sv) {
+            
+            CALL_WITH_PING(is_ping, GetRecords(arg, std::move(res)))
         }
     }
     return false;
@@ -262,20 +263,19 @@ void Game::GetState(HttpResource&& res) const {
     util::FillBody(res.resp, json_loader::JsonObject::GetJson(main_json, false));
 }
 
-void Game::GetRecords(HttpResource && res) const {
+void Game::GetRecords(const std::string_view & url, HttpResource && res) const {
     res.resp.set(http::field::content_type, util::ToBSV(ContentType::JSON));
     res.resp.set(http::field::cache_control, "no-cache");
-    /*
-    int time_delta;
-    try {
-        auto tree = json_loader::JsonObject::GetTree(res.req.body());
-        start = atoi(tree.get<int>("timeDelta").c_str());
-    } catch (...) {
-        throw ec::BAD_REQUEST_TICK;
-    }
-    */
 
-    auto players_list = app_.GetUseCaseDB().GetPlayersRetired();
+    auto properties = util::GetPropertiesFromUrl(std::string(url.data(), url.size()));
+
+    auto offset = properties.contains("start") ? atoi(properties["start"].c_str()) : 0;
+    auto maxItems = properties.contains("maxItems") ? atoi(properties["maxItems"].c_str()) : 100;
+
+    if(maxItems > 100)
+        throw ec::BAD_REQUEST;
+
+    auto players_list = app_.GetUseCaseDB().GetPlayersRetired(offset, maxItems);
 
     std::string response_string = "[";
     for(const auto & player : players_list) {

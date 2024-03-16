@@ -29,7 +29,7 @@ struct Args {
 
 namespace {
 
-constexpr const char DB_URL_ENV_NAME[]{"BOOKYPEDIA_DB_URL"};
+constexpr const char DB_URL_ENV_NAME[]{"GAME_DB_URL"};
 
 std::string GetDBUrlFromEnv() {
     std::string db_url;

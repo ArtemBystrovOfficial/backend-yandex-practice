@@ -34,8 +34,8 @@ FROM ubuntu:22.04 as run
 RUN groupadd -r www && useradd -r -g www www 
 USER www
 
-COPY --from=build /app/build/bin/leave_game /app/
+COPY --from=build /app/build/bin/game_server /app/
 COPY ./data /app/data
 COPY ./static /app/static
 
-ENTRYPOINT ["/app/leave_game", "-c", "/app/data/config.json" , "-w", "/app/static" , "-t", "50"] 
+ENTRYPOINT ["/app/game_server", "-c", "/app/data/config.json" , "-w", "/app/static"] 

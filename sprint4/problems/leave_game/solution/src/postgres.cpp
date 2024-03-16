@@ -8,6 +8,7 @@
 
 namespace postgres {
 
+using namespace std::literals;    
 using pqxx::operator"" _zv;
 
 Database::Database(const std::string & db_url)  
@@ -34,13 +35,15 @@ Database::Database(const std::string & db_url)
     work.commit();
 }
 
-domain::RetiredPlayerRepository::retired_players_t RetiredPlayerRepositoryImpl::GetSortedRetiredPlayersList() {
+domain::RetiredPlayerRepository::retired_players_t RetiredPlayerRepositoryImpl::GetSortedRetiredPlayersList(int offset, int limit) {
     pqxx::read_transaction tx{*connection_}; 
 
     retired_players_t players;
     auto size = std::get<0>(tx.query1<int>("SELECT count(*) FROM retired_players;"));
     players.reserve(size);
-    for(auto [name, score, time] : tx.query<std::string, int, int>("SELECT name, score, play_time_ms FROM retired_players ORDER BY score DESC, play_time_ms, name LIMIT 100;"_zv)) {
+    auto query = "SELECT name, score, play_time_ms FROM retired_players ORDER BY score DESC, play_time_ms, name OFFSET "s 
+                  + std::to_string(offset) + " LIMIT "s +std::to_string(limit) + ";"s;
+    for(auto [name, score, time] : tx.query<std::string, int, int>(pqxx::zview(query))) {
         players.push_back(domain::RetiredPlayer(name, score, time));
     }
 
