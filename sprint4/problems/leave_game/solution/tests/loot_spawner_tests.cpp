@@ -18,7 +18,7 @@ SCENARIO("spawn loot") {
         map->LoadJsonFromFile(CMAKE_BIN_PATH + "/../../data/test_config.json"s);
         auto loot_generator = std::make_shared<loot_gen::LootGenerator>(std::chrono::milliseconds(1000), 1.0f);
         model::TimeManager time_manager;
-        auto session = std::make_shared<model::GameSession>(map, time_manager, 1.0, 0, false, loot_generator);
+        auto session = std::make_shared<model::GameSession>(map, time_manager, 1.0, 0, false, 60, loot_generator);
         time_manager.AddSubscribers(session,10);
 
         WHEN("Map without loots") {

@@ -53,6 +53,14 @@ std::shared_ptr<Player> Players::GetPlayerWithCheck(const util::Token& token) co
     auto player = FindByToken(token);
     if (!player) 
         throw ec::AUTHORIZATION_NOT_FOUND;
+    if(player->dog_->IsExited()) {
+        auto it = std::find_if(players_.begin(), players_.end(),
+                       [&](const auto& pair) { return pair.second == player; });
+        if (it != players_.end()) {
+            players_.erase(it);
+        }               
+        throw ec::AUTHORIZATION_NOT_FOUND;
+    }
     return player;
 }
 

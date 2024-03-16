@@ -32,7 +32,7 @@ class Players {
    private:
     std::shared_ptr<Player> GetPlayerWithCheck(const util::Token&) const noexcept(false);
 
-    Players_t players_;
+    mutable Players_t players_;
     model::Game& game_;
 };
 

@@ -25,6 +25,7 @@ class Game : public Methods {
 
     void GetPlayers(HttpResource &&) const;
     void GetState(HttpResource &&res) const;
+    void GetRecords(HttpResource &&res) const;
 };
 
 class Maps : public Methods {

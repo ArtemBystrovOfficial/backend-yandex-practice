@@ -42,4 +42,5 @@ void InitBoostLogFilter() {
     logging::add_common_attributes();
 
     logging::add_console_log(std::cout, keywords::format = &LogFormatter, keywords::auto_flush = true);
+    logging::core::get()->set_filter(logging::trivial::severity == logging::trivial::debug);
 }

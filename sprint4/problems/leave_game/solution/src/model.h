@@ -185,7 +185,7 @@ class Dog : public TimeObject {
 
     Dog() = default;
 
-    Dog(Id id, std::string_view name, PointF position, Real map_speed, std::shared_ptr<Map> current_map, Bag bag)
+    Dog(Id id, std::string_view name, PointF position, Real map_speed, std::shared_ptr<Map> current_map, Bag bag, int dog_retirement_time)
         : id_(id),
           name_(name.data(), name.size()),
           position_(position),
@@ -194,8 +194,11 @@ class Dog : public TimeObject {
           map_speed_(map_speed),
           current_map_(current_map), 
           bag_(bag),
-          score_(0) {
+          score_(0),
+          dog_retirement_time_(dog_retirement_time) {
             position_before_ = position;
+            entered_time_ = std::chrono::steady_clock::now();
+            StopDog();
           };
 
     bool IsValid() { return !name_.empty(); }
@@ -214,6 +217,8 @@ class Dog : public TimeObject {
     Bag & GetMutableBag() { return bag_; }
     const Bag & GetBag() const { return bag_; }
     size_t GetScore() const { return score_; }
+    bool IsExited() const { return is_exited_; }
+    bool IsStopped() const { return (speed_.x == 0.0 && speed_.y == 0.0); }
 
     void SetName(const std::string& new_name) { name_ = new_name;}
     void SetPosition(const PointF& new_position) { position_ = new_position; position_before_ = position_;}
@@ -223,6 +228,7 @@ class Dog : public TimeObject {
     void SetMap(std::shared_ptr<Map> new_map) { current_map_ = new_map; }
     void SetBag(const Bag& new_bag) { bag_ = new_bag; }
     void SetScore(size_t new_score) { score_ = new_score;}
+    void SetIsExited(bool is_exited) { is_exited_ = is_exited; }
 
     bool MoveDog(Direction);
     void StopDog();
@@ -249,6 +255,12 @@ class Dog : public TimeObject {
     SpeedF speed_;
     Real map_speed_;
     Direction direction_;
+
+    //Exit System
+    Real dog_retirement_time_;
+    bool is_exited_{false};
+    std::chrono::steady_clock::time_point entered_time_;
+    std::optional<std::chrono::steady_clock::time_point> exited_time_;
 };
 
 class LootObject {
@@ -294,7 +306,8 @@ class GameSession : public TimeObject {
                 TimeManager& time_manager,
                 Real default_speed,
                 int default_bag_capacity,
-                bool is_game_randomize_start_cordinate, 
+                bool is_game_randomize_start_cordinate,
+                int dog_retirement_time, 
                 std::shared_ptr<loot_gen::LootGenerator>);
 
     std::shared_ptr<Dog> AddDog(std::string_view dog_name);
@@ -336,6 +349,7 @@ class GameSession : public TimeObject {
     int _last_dog_id;
     Real default_speed_;
     int default_bag_capacity_;
+    Real dog_retirement_time_;
     std::shared_ptr<Map> map_;
     Dogs dogs_;
     LootObjects loot_objects_;
@@ -446,6 +460,8 @@ class Game : public json_loader::JsonObject {
     MapIdToIndex map_id_to_index_;
     Real dog_speed_default_; 
     int default_bag_capacity_;
+    Real dog_retirement_time_;
+
     std::shared_ptr<loot_gen::LootGenerator> loot_generator_;
 
     bool is_game_randomize_start_cordinate_;

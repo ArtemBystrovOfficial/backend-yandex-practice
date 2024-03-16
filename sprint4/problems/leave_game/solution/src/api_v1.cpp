@@ -49,6 +49,9 @@ bool Game::GetHandler(HttpResource&& res, bool is_ping) {
         if (arg == "state"sv) {
             CALL_WITH_PING(is_ping, GetState(std::move(res)))
         }
+        if (arg == "records") {
+            CALL_WITH_PING(is_ping, GetRecords(std::move(res)))
+        }
     }
     return false;
 }
@@ -257,6 +260,36 @@ void Game::GetState(HttpResource&& res) const {
     main_json.add_child("lostObjects", objects_list_json);
 
     util::FillBody(res.resp, json_loader::JsonObject::GetJson(main_json, false));
+}
+
+void Game::GetRecords(HttpResource && res) const {
+    res.resp.set(http::field::content_type, util::ToBSV(ContentType::JSON));
+    res.resp.set(http::field::cache_control, "no-cache");
+    /*
+    int time_delta;
+    try {
+        auto tree = json_loader::JsonObject::GetTree(res.req.body());
+        start = atoi(tree.get<int>("timeDelta").c_str());
+    } catch (...) {
+        throw ec::BAD_REQUEST_TICK;
+    }
+    */
+
+    auto players_list = app_.GetUseCaseDB().GetPlayersRetired();
+
+    std::string response_string = "[";
+    for(const auto & player : players_list) {
+        ptree player_json;
+        player_json.put("name", player.name_);
+        player_json.put("score", player.score_);
+        player_json.put("playTime", player.play_time_ms_ / 1000.0);
+        response_string += json_loader::JsonObject::GetJson(player_json, false) +",\n"s;
+    }
+    if(response_string.size() != 1) 
+        response_string.erase(response_string.size()-2,1);//','
+    response_string += "]";
+
+    util::FillBody(res.resp, response_string);
 }
 
 }  // namespace api_v1

@@ -6,7 +6,7 @@ namespace app {
 
 void UseCasesImpl::AddPlayerRetired(const RetiredPlayerInfo& player) {
     postgres::RetiredPlayerRepositoryImpl players_rep(database_.GetConnection());
-    players_rep.AddRetriedPlayer(domain::RetiredPlayer{player.name_, player.play_time_ms_, player.score_});
+    players_rep.AddRetriedPlayer(domain::RetiredPlayer(player.name_, player.score_, player.play_time_ms_));
 }
 
 UseCases::players_list_t UseCasesImpl::GetPlayersRetired() { 

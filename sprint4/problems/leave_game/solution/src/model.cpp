@@ -5,36 +5,38 @@
 
 #include "error_codes.h"
 #include "logger.h"
+#include <ratio>
 
 namespace model {
 using namespace std::literals;
 
 namespace lit {
-const std::string id = "id"s,
-                  name = "name"s, 
-                  roads = "roads"s, 
-                  buildings = "buildings"s,
-                  offices = "offices"s, 
-                  maps = "maps"s, 
-                  x = "x"s, 
-                  y = "y"s,
-                  x0 = "x0"s, 
-                  y0 = "y0"s, 
-                  x1 = "x1"s, 
-                  y1 = "y1"s, 
-                  w = "w"s, 
-                  h = "h"s, 
-                  offsetX = "offsetX"s, 
-                  offsetY = "offsetY"s,
-                  dog_speed_default = "defaultDogSpeed", 
-                  dog_speed = "dogSpeed", 
-                  period = "period", 
-                  probability = "probability", 
-                  loot_type = "lootType",
-                  loot_generator_config="lootGeneratorConfig",
-                  default_bag_capacity =  "defaultBagCapacity", 
-                  bag_capacity = "bagCapacity", 
-                  value = "value" ;
+const std::string id = "id"s;
+const std::string name = "name"s; 
+const std::string roads = "roads"s; 
+const std::string buildings = "buildings"s;
+const std::string offices = "offices"s; 
+const std::string maps = "maps"s; 
+const std::string x = "x"s; 
+const std::string y = "y"s;
+const std::string x0 = "x0"s; 
+const std::string y0 = "y0"s; 
+const std::string x1 = "x1"s; 
+const std::string y1 = "y1"s; 
+const std::string w = "w"s; 
+const std::string h = "h"s; 
+const std::string offsetX = "offsetX"s; 
+const std::string offsetY = "offsetY"s;
+const std::string dog_speed_default = "defaultDogSpeed"; 
+const std::string dog_speed = "dogSpeed"; 
+const std::string period = "period"; 
+const std::string probability = "probability"; 
+const std::string loot_type = "lootType";
+const std::string loot_generator_config="lootGeneratorConfig";
+const std::string default_bag_capacity =  "defaultBagCapacity"; 
+const std::string bag_capacity = "bagCapacity"; 
+const std::string value = "value";
+const std::string dog_retirement_time = "dogRetirementTime";
 }
 int Map::GetScoreByLoot(int loot_type) const { 
     return special_information_loots_[loot_type].get<int>(lit::value); 
@@ -261,6 +263,12 @@ void Game::LoadJsonNode(const ptree& tree) {
         default_bag_capacity_ = 3;
     }
 
+    try {
+        dog_retirement_time_ = tree.get<float>(lit::dog_retirement_time);
+    } catch (...) {
+        dog_retirement_time_ = 60.0; //1min
+    }
+
     auto gen_conf = tree.get_child(lit::loot_generator_config);
 
     auto period = gen_conf.get<Real>(lit::period);
@@ -296,7 +304,7 @@ std::string Game::GetJsonMaps() const {
 std::shared_ptr<GameSession> Game::AddSession(Map::Id id) {
     auto map = FindMap(id);
     if (map) {
-        auto session = std::make_shared<GameSession>(std::move(map), time_manager_, dog_speed_default_,default_bag_capacity_, is_game_randomize_start_cordinate_, loot_generator_);
+        auto session = std::make_shared<GameSession>(std::move(map), time_manager_, dog_speed_default_,default_bag_capacity_, is_game_randomize_start_cordinate_,dog_retirement_time_, loot_generator_);
         session->request_to_save_retired_player_s.connect([this](std::string a1, int a2, int a3) { 
             request_to_save_retired_player_s(std::move(a1),a2,a3); 
         });
@@ -389,12 +397,14 @@ GameSession::GameSession(std::shared_ptr<Map> map,
                          Real default_speed,
                          int default_bag_capacity,
                          bool is_game_randomize_start_cordinate,
+                         int dog_retirement_time,
                          std::shared_ptr<loot_gen::LootGenerator> gen)
     : map_(std::move(map)),
      _last_dog_id(0),
      default_speed_(default_speed),
      time_manager_(time_manager), 
-     default_bag_capacity_(default_bag_capacity), 
+     default_bag_capacity_(default_bag_capacity),
+     dog_retirement_time_(dog_retirement_time), 
      is_game_randomize_start_cordinate_(is_game_randomize_start_cordinate),
      loot_generator_(gen) {}
 
@@ -418,13 +428,15 @@ std::shared_ptr<Dog> GameSession::AddDog(std::string_view dog_name) {
         is_game_randomize_start_cordinate_ ? map_->GetRandomCordinates() : PointF{0.0, 0.0},
         map_speed,
         map_,
-        Bag{{},bag_capacity}
+        Bag{{},bag_capacity},
+        dog_retirement_time_
         ));
 
     ptr->request_to_save_retired_player_s.connect([this, ptr](std::string a1, int a2, int a3){ 
         auto elem = std::find(dogs_.begin(), dogs_.end(), ptr); //TODO HASH MAP 
         if(elem == dogs_.end())
             assert(false);
+        (*elem)->SetIsExited(true);
         dogs_.erase(elem);
         request_to_save_retired_player_s(std::move(a1),a2,a3); 
     });
@@ -537,9 +549,23 @@ bool Dog::MoveDog(Direction direction) {
     return true;
 }
 
-void Dog::StopDog() { speed_ = {0.0, 0.0}; }
+void Dog::StopDog() { 
+    speed_ = {0.0, 0.0}; 
+    BOOST_LOG_TRIVIAL(debug) << "DOG STOPPED!";
+    exited_time_ = std::chrono::steady_clock::now();
+}
 
 void Dog::Tick(const std::chrono::milliseconds& ms) {
+    if(IsStopped() && exited_time_ && !is_exited_) {
+        auto time_after_stopped = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - *exited_time_).count();
+        BOOST_LOG_TRIVIAL(debug) << time_after_stopped << " " << dog_retirement_time_;
+        if(time_after_stopped  >= dog_retirement_time_) {
+            auto deleted_time = std::chrono::steady_clock::now();
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(deleted_time - entered_time_).count();
+            request_to_save_retired_player_s(name_, score_, ms);
+        }
+    }
+
     if (!speed_.x && !speed_.y) 
         return;
     static constexpr float millisecond_in_second = 1000.0;
@@ -554,8 +580,6 @@ void Dog::Tick(const std::chrono::milliseconds& ms) {
         StopDog();
     position_before_ = position_;
     position_ = position;
-
-    //request_to_save_retired_player_s(name_,score_,play_time_ms_);
 }
 
 }  // namespace model
