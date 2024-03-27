@@ -1,9 +1,15 @@
 #pragma once
 
-#include "geom.h"
+//#include "geom.h"
 
 #include <algorithm>
 #include <vector>
+
+namespace geom {
+    struct Point2D {
+        double x, y;
+    };
+}
 
 namespace collision_detector {
 
