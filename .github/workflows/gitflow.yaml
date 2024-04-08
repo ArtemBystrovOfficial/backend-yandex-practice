@@ -17,8 +17,7 @@ jobs:
       run: | 
         sudo apt remove -y g++-9 gcc-9 clang-11
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test; sudo apt update
-        sudo apt -y install g++-11 
-        sudo apt -y install gcc-11
+        sudo apt -y install g++-11 gcc-11
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11
         pip uninstall conan -y
         pip install -U conan==1.59.0
@@ -30,4 +29,8 @@ jobs:
         conan install .. --build=missing -s build_type=Release -s compiler.libcxx=libstdc++11
         cmake ..
         cmake --build . -j4
+        
+    - name: Run CTest
+      run: |
+        cd build
         ctest 
