@@ -19,7 +19,6 @@ jobs:
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt install -y g++-11 gcc-11
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
-        sudo update-alternatives --install /usr/bin/gсс gсс /usr/bin/gсс-11 100
         pip uninstall conan -y
         pip install -U conan==1.59.0
 
