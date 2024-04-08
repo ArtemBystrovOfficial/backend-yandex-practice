@@ -16,9 +16,9 @@ jobs:
     - name: Set up g++
       run: | 
         sudo apt remove -y g++-9 gcc-9 clang-11
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test; sudo apt update
         sudo apt install -y g++-11 gcc-11
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11
         pip uninstall conan -y
         pip install -U conan==1.59.0
 
