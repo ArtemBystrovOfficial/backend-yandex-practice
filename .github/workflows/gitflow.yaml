@@ -15,7 +15,7 @@ jobs:
 
     - name: Set up g++
       run: | 
-        sudo apt uninstall -y g++-10
+        sudo apt remove -y g++-10
         sudo apt install -y g++-11
         pip uninstall conan -y
         pip install -U conan==1.59.0
