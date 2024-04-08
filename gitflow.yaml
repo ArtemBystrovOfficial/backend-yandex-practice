@@ -1,0 +1,28 @@
+name: Testing
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up C++ Build Environment
+      uses: actions/setup-cpp@v2
+      with:
+        compiler: 'g++-10'
+        cpp-version: '17'
+
+    - name: Build Tests
+      run: |
+        mkdir build
+        conan install .. --build=missing -s build_type=Release -s compiler.libcxx=libstdc++11
+        cmake ..
+        cmake --build . -j4
+        ctest 
